@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Clone</title>
+    <!-- Boxicons Link for Icons -->
+    <link href="https://unpkg.com" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header / Navbar Section -->
+    <header class="header">
+        <div class="header-left">
+            <i class='bx bx-menu' id="menu-btn"></i>
+            <div class="logo">
+                <i class='bx bxl-youtube'></i>
+                <span>YouTube</span>
+            </div>
+        </div>
+        
+        <div class="header-center">
+            <div class="search-box">
+                <input type="text" placeholder="Search">
+                <button><i class='bx bx-search'></i></button>
+            </div>
+            <i class='bx bx-microphone mic-icon'></i>
+        </div>
+
+        <div class="header-right">
+            <i class='bx bx-video-plus'></i>
+            <i class='bx bx-bell'></i>
+            <div class="user-profile"></div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Sidebar Section -->
+        <aside class="sidebar" id="sidebar">
+            <a href="#" class="nav-link active"><i class='bx bxs-home'></i><span>Home</span></a>
+            <a href="#" class="nav-link"><i class='bx bx-movie-play'></i><span>Shorts</span></a>
+            <a href="#" class="nav-link"><i class='bx bx-collection'></i><span>Subscriptions</span></a>
+            <hr>
+            <a href="#" class="nav-link"><i class='bx bx-folder'></i><span>Library</span></a>
+            <a href="#" class="nav-link"><i class='bx bx-history'></i><span>History</span></a>
+            <a href="#" class="nav-link"><i class='bx bx-play-circle'></i><span>Your Videos</span></a>
+            <a href="#" class="nav-link"><i class='bx bx-time-five'></i><span>Watch Later</span></a>
+            <a href="#" class="nav-link"><i class='bx bx-like'></i><span>Liked Videos</span></a>
+        </aside>
+
+        <!-- Video Grid Content -->
+        <main class="video-content">
+            <div class="video-grid">
+                
+                <!-- Repeatable Video Card Template -->
+                <!-- Card 1 -->
+                <div class="video-card">
+                    <div class="thumbnail">
+                        <img src="https://unsplash.com" alt="Thumbnail">
+                        <span class="duration">12:34</span>
+                    </div>
+                    <div class="video-details">
+                        <div class="channel-logo"></div>
+                        <div class="video-info">
+                            <h3 class="video-title">Learn Web Development in 2026 | Full Roadmap</h3>
+                            <p class="channel-name">Code Academy</p>
+                            <p class="metadata">1.2M views &bull; 2 days ago</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="video-card">
+                    <div class="thumbnail">
+                        <img src="https://unsplash.com" alt="Thumbnail">
+                        <span class="duration">8:15</span>
+                    </div>
+                    <div class="video-details">
+                        <div class="channel-logo" style="background-color: #3498db;"></div>
+                        <div class="video-info">
+                            <h3 class="video-title">Build a Website from Scratch (HTML & CSS)</h3>
+                            <p class="channel-name">Tech Design</p>
+                            <p class="metadata">450K views &bull; 1 week ago</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="video-card">
+                    <div class="thumbnail">
+                        <img src="https://unsplash.com" alt="Thumbnail">
+                        <span class="duration">22:01</span>
+                    </div>
+                    <div class="video-details">
+                        <div class="channel-logo" style="background-color: #e74c3c;"></div>
+                        <div class="video-info">
+                            <h3 class="video-title">Is This the Best Coding Setup? | Room Tour</h3>
+                            <p class="channel-name">Workspace Vlogs</p>
+                            <p class="metadata">89K views &bull; 5 hours ago</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="video-card">
+                    <div class="thumbnail">
+                        <img src="https://unsplash.com" alt="Thumbnail">
+                        <span class="duration">15:40</span>
+                    </div>
+                    <div class="video-details">
+                        <div class="channel-logo" style="background-color: #2ecc71;"></div>
+                        <div class="video-info">
+                            <h3 class="video-title">Cybersecurity Basics for Beginners</h3>
+                            <p class="channel-name">Secure Net</p>
+                            <p class="metadata">310K views &bull; 3 months ago</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

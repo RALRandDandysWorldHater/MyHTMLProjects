@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learn Bootstrap Grid!</title>
+
+  <!-- Bootstrap CSS -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+
+  <style>
+    /* My own CSS */
+    body {
+      background: #f1f5ff;
+      font-family: Arial, sans-serif;
+      color: #24324a;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #5146e5, #8b5cf6);
+      color: white;
+      padding: 35px 20px;
+      border-radius: 18px;
+    }
+
+    .lesson {
+      background: white;
+      padding: 24px;
+      margin-bottom: 22px;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px #0000000c;
+    }
+
+    .demo-box {
+      background: #dbeafe;
+      border: 2px solid #60a5fa;
+      border-radius: 10px;
+      padding: 18px 5px;
+      text-align: center;
+      font-weight: bold;
+      min-height: 65px;
+    }
+
+    .demo-box:nth-child(even) {
+      background: #ede9fe;
+      border-color: #a78bfa;
+    }
+
+    .preview {
+      background: #f8fafc;
+      border: 2px dashed #94a3b8;
+      border-radius: 12px;
+      padding: 12px;
+      margin: 15px auto;
+      width: 100%;
+      max-width: 100%;
+      transition: width 0.3s;
+    }
+
+    .preview-title {
+      text-align: center;
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 12px;
+    }
+
+    .custom-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+    }
+
+    .custom-grid .demo-box {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .custom-grid .demo-box span {
+      font-size: 12px;
+      font-weight: normal;
+    }
+
+    .mode-button {
+      margin: 4px;
+    }
+
+    .active-mode {
+      background: #5146e5 !important;
+      color: white !important;
+    }
+
+    .code-box {
+      background: #172033;
+      color: #d1fae5;
+      padding: 18px;
+      border-radius: 10px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font-family: Consolas, monospace;
+      font-size: 14px;
+    }
+
+    .quiz-option {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 12px;
+      margin: 8px 0;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+    }
+
+    .quiz-option:hover {
+      background: #e0e7ff;
+    }
+
+    .correct {
+      background: #dcfce7 !important;
+      border-color: #22c55e !important;
+    }
+
+    .wrong {
+      background: #fee2e2 !important;
+      border-color: #ef4444 !important;
+    }
+
+    .small-note {
+      color: #64748b;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="container py-4">
+
+    <!-- INTRODUCTION -->
+    <header class="hero text-center mb-4">
+      <h1>🎨 Let's Learn Bootstrap Grid!</h1>
+      <p class="mb-0">
+        A fun, interactive web development lesson for beginners.
+      </p>
+    </header>
+
+    <!-- LESSON 1 -->
+    <section class="lesson">
+      <h2>📚 Lesson 1: What is a Grid?</h2>
+
+      <p>
+        A grid helps us arrange boxes on a webpage.
+        Bootstrap divides each row into 12 columns.
+      </p>
+
+      <div class="row g-2 text-center">
+        <div class="col-12">
+          <div class="demo-box">12 columns = 1 big box</div>
+        </div>
+
+        <div class="col-6">
+          <div class="demo-box">6 columns</div>
+        </div>
+        <div class="col-6">
+          <div class="demo-box">6 columns</div>
+        </div>
+
+        <div class="col-4">
+          <div class="demo-box">4</div>
+        </div>
+        <div class="col-4">
+          <div class="demo-box">4</div>
+        </div>
+        <div class="col-4">
+          <div class="demo-box">4</div>
+        </div>
+      </div>
+
+      <p class="mt-3 mb-0">
+        <strong>Try counting:</strong>
+        6 + 6 = 12, and 4 + 4 + 4 = 12.
+        Each row uses the available 12 columns.
+      </p>
+    </section>
+
+    <!-- LESSON 2 -->
+    <section class="lesson">
+      <h2>🕹️ Lesson 2: Build Your Own Grid!</h2>
+
+      <p>Choose how many boxes you want in each row.</p>
+
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <button class="btn btn-outline-primary" onclick="setColumns(1)">
+          1 Box
+        </button>
+
+        <button class="btn btn-outline-primary" onclick="setColumns(2)">
+          2 Boxes
+        </button>
+
+        <button class="btn btn-outline-primary" onclick="setColumns(3)">
+          3 Boxes
+        </button>
+
+        <button class="btn btn-outline-primary" onclick="setColumns(4)">
+          4 Boxes
+        </button>
+
+        <button class="btn btn-outline-primary" onclick="setColumns(6)">
+          6 Boxes
+        </button>
+      </div>
+
+      <h5 id="gridHeading">Your grid: 3 boxes per row</h5>
+
+      <div class="preview" id="gridPreview">
+        <div class="preview-title">LIVE GRID PREVIEW</div>
+        <div id="gridOutput"></div>
+      </div>
+
+      <p id="gridExplanation" class="alert alert-info">
+        Three boxes use 4 columns each: 4 + 4 + 4 = 12.
+      </p>
+    </section>
+
+    <!-- LESSON 3 -->
+    <section class="lesson">
+      <h2>⚖️ Lesson 3: Bootstrap vs. Normal CSS</h2>
+
+      <p>
+        Both methods can create grids. Choose one to see how it works.
+      </p>
+
+      <div>
+        <button
+          id="bootstrapButton"
+          class="btn btn-outline-primary mode-button active-mode"
+          onclick="setMode('bootstrap')"
+        >
+          Bootstrap
+        </button>
+
+        <button
+          id="cssButton"
+          class="btn btn-outline-primary mode-button"
+          onclick="setMode('css')"
+        >
+          Normal CSS
+        </button>
+      </div>
+
+      <div class="preview">
+        <div class="preview-title" id="modeTitle">
+          Made using Bootstrap classes
+        </div>
+        <div id="compareOutput"></div>
+      </div>
+
+      <h5>How does the code work?</h5>
+
+      <div class="code-box" id="codeOutput"></div>
+
+      <p class="mt-3 mb-0" id="modeExplanation"></p>
+    </section>
+
+    <!-- LESSON 4 -->
+    <section class="lesson">
+      <h2>📱 Lesson 4: Responsive Design</h2>
+
+      <p>
+        A responsive website adjusts its layout for different screen sizes.
+        Let's imagine that you're viewing your website on different devices.
+      </p>
+
+      <label for="screenSize" class="form-label">
+        <strong>Choose a screen width:</strong>
+      </label>
+
+      <input
+        type="range"
+        class="form-range"
+        id="screenSize"
+        min="280"
+        max="900"
+        value="700"
+      >
+
+      <p>Preview width: <strong id="screenLabel">700px</strong></p>
+
+      <div class="preview" id="responsivePreview">
+        <div class="preview-title">SIMULATED SCREEN</div>
+        <div id="responsiveOutput"></div>
+      </div>
+
+      <div class="alert alert-warning mt-3">
+        <strong>Remember:</strong> This is a visual demonstration.
+        The preview width is controlled by JavaScript. Bootstrap's normal
+        responsive breakpoints are based on the browser viewport, not
+        the width of this preview box.
+      </div>
+
+      <h5>Try this Bootstrap code:</h5>
+
+      <div class="code-box"> &lt;div class="row"&gt;
+  &lt;div class="col-12 col-md-6"&gt;
+    First box
+  &lt;/div&gt;
+
+  &lt;div class="col-12 col-md-6"&gt;
+    Second box
+  &lt;/div&gt;
+&lt;/div&gt;</div>
+
+      <p class="mt-3">
+        <strong>What does it mean?</strong>
+      </p>
+
+      <ul>
+        <li><code>row</code> creates a row for the columns.</li>
+        <li><code>col-12</code> makes a box full-width on smaller screens.</li>
+        <li><code>col-md-6</code> makes each box half-width at Bootstrap's
+          medium breakpoint and above.</li>
+      </ul>
+
+      <p class="small-note">
+        Bootstrap 5 uses a medium breakpoint of 768px by default.
+      </p>
+    </section>
+
+    <!-- LESSON 5 -->
+    <section class="lesson">
+      <h2>🧩 Lesson 5: Understand the Three Magic Words</h2>
+
+      <div class="mb-3">
+        <h5>1. container</h5>
+        <p>
+          A <code>container</code> keeps your content organized and provides
+          a suitable width for the page.
+        </p>
+        <div class="code-box">&lt;div class="container"&gt;
+  My website content
+&lt;/div&gt;</div>
+      </div>
+
+      <div class="mb-3">
+        <h5>2. row</h5>
+        <p>
+          A <code>row</code> holds your columns together.
+        </p>
+        <div class="code-box">&lt;div class="row"&gt;
+  My columns go here
+&lt;/div&gt;</div>
+      </div>
+
+      <div class="mb-3">
+        <h5>3. col</h5>
+        <p>
+          A <code>col</code> is a column inside a row.
+          For example, <code>col-6</code> uses half of the 12-column grid.
+        </p>
+        <div class="code-box">&lt;div class="row"&gt;
+  &lt;div class="col-6"&gt;Left&lt;/div&gt;
+  &lt;div class="col-6"&gt;Right&lt;/div&gt;
+&lt;/div&gt;</div>
+      </div>
+    </section>
+
+    <!-- QUIZ -->
+    <section class="lesson">
+      <h2>🧠 Final Challenge: Mini Quiz!</h2>
+
+      <p id="questionNumber">Question 1 of 4</p>
+      <h5 id="questionText"></h5>
+
+      <div id="quizOptions"></div>
+
+      <p id="quizFeedback" class="mt-3" aria-live="polite"></p>
+
+      <button
+        id="nextButton"
+        class="btn btn-primary"
+        onclick="nextQuestion()"
+        disabled
+      >
+        Next Question →
+      </button>
+
+      <div id="quizResult" class="mt-3"></div>
+
+      <button
+        id="restartButton"
+        class="btn btn-outline-primary mt-2"
+        onclick="startQuiz()"
+        hidden
+      >
+        Try Again
+      </button>
+    </section>
+
+    <footer class="text-center py-4">
+      <p>🎉 Great job! Keep learning and building websites!</p>
+      <p class="small-note">Made for curious young web developers.</p>
+    </footer>
+
+  </main>
+
+  <script>
+    // ----------------------------------
+    // GRID BUILDER
+    // ----------------------------------
+
+    let columns = 3;
+    let mode = "bootstrap";
+
+    const gridOutput = document.getElementById("gridOutput");
+    const compareOutput = document.getElementById("compareOutput");
+    const responsiveOutput = document.getElementById("responsiveOutput");
+
+    function getColumnWidth(number) {
+      return 12 / number;
+    }
+
+    function makeBoxes(number, useBootstrap) {
+      let html = "";
+
+      for (let i = 1; i <= 12; i++) {
+        let columnClass = "";
+
+        if (useBootstrap) {
+          // On smaller screens, stack boxes.
+          // On medium screens and larger, use the selected grid size.
+          columnClass =
+            "col-12 col-md-" + getColumnWidth(number);
+        }
+
+        const content = `
+          <div class="demo-box">
+            Box ${i}
+            <br>
+            <span>${useBootstrap
+              ? getColumnWidth(number) + " / 12 columns"
+              : "CSS Grid"}</span>
+          </div>
+        `;
+
+        if (useBootstrap) {
+          html += `<div class="${columnClass}">${content}</div>`;
+        } else {
+          html += content;
+        }
+      }
+
+      if (useBootstrap) {
+        return `<div class="row g-2">${html}</div>`;
+      }
+
+      return `<div class="custom-grid" style="--columns:${number}">${html}</div>`;
+    }
+
+    function setColumns(number) {
+      columns = number;
+
+      document.getElementById("gridHeading").textContent =
+        "Your grid: " + number + " " +
+        (number === 1 ? "box" : "boxes") + " per row";
+
+      document.getElementById("gridExplanation").textContent =
+        number + " box(es) per row means each box uses " +
+        getColumnWidth(number) + " of the 12 columns. " +
+        number + " × " + getColumnWidth(number) + " = 12.";
+
+      gridOutput.innerHTML = makeBoxes(number, true);
+
+      updateComparison();
+      updateResponsive();
+    }
+
+    // ----------------------------------
+    // BOOTSTRAP VS. CSS
+    // ----------------------------------
+
+    function setMode(selectedMode) {
+      mode = selectedMode;
+
+      document.getElementById("bootstrapButton")
+        .classList.toggle("active-mode", mode === "bootstrap");
+
+      document.getElementById("cssButton")
+        .classList.toggle("active-mode", mode === "css");
+
+      updateComparison();
+    }
+
+    function updateComparison() {
+      const isBootstrap = mode === "bootstrap";
+
+      compareOutput.innerHTML = makeBoxes(columns, isBootstrap);
+
+      if (isBootstrap) {
+        document.getElementById("modeTitle").textContent =
+          "Made using Bootstrap classes";
+
+        document.getElementById("codeOutput").textContent =
+          '<div class="row g-2">\\n' +
+          '  <div class="col-12 col-md-' +
+          getColumnWidth(columns) + '">\\n' +
+          '    My box\\n' +
+          '  </div>\\n' +
+          '</div>';
+
+        document.getElementById("modeExplanation").textContent =
+          "Bootstrap gives you ready-made classes. " +
+          "The row arranges the columns, and the col classes " +
+          "control how much space each box uses.";
+      } else {
+        document.getElementById("modeTitle").textContent =
+          "Made using normal CSS Grid";
+
+        document.getElementById("codeOutput").textContent =
+          ".my-grid {\\n" +
+          "  display: grid;\\n" +
+          "  grid-template-columns: repeat(" + columns + ", 1fr);\\n" +
+          "  gap: 10px;\\n" +
+          "}";
+
+        document.getElementById("modeExplanation").textContent =
+          "With normal CSS, you choose the number of columns " +
+          "yourself. The repeat() function creates equal-width columns. " +
+          "The 1fr unit shares the available space equally.";
+      }
+    }
+
+    // ----------------------------------
+    // RESPONSIVE PREVIEW
+    // ----------------------------------
+
+    const screenSize = document.getElementById("screenSize");
+
+    function updateResponsive() {
+      const width = Number(screenSize.value);
+
+      document.getElementById("screenLabel").textContent =
+        width + "px";
+
+      document.getElementById("responsivePreview").style.width =
+        "min(100%, " + width + "px)";
+
+      if (width < 500) {
+        // Narrow simulated screen: one box per row.
+        responsiveOutput.innerHTML = makeBoxes(1, true);
+      } else if (width < 700) {
+        // Medium simulated screen: two boxes per row.
+        responsiveOutput.innerHTML = makeBoxes(2, true);
+      } else {
+        // Wide simulated screen: use the selected number.
+        responsiveOutput.innerHTML = makeBoxes(columns, true);
+      }
+    }
+
+    screenSize.addEventListener("input", updateResponsive);
+
+    // ----------------------------------
+    // QUIZ
+    // ----------------------------------
+
+    const questions = [
+      {
+        question: "How many columns are in Bootstrap's standard grid?",
+        answers: ["6 columns", "10 columns", "12 columns", "20 columns"],
+        correct: 2,
+        explanation: "Correct! Bootstrap's standard grid has 12 columns."
+      },
+      {
+        question: "Which class creates a Bootstrap row?",
+        answers: ["container", "row", "button", "heading"],
+        correct: 1,
+        explanation: "Correct! The row class organizes your columns."
+      },
+      {
+        question: "What does col-6 mean in Bootstrap?",
+        answers: [
+          "It uses 6 rows",
+          "It uses half of the 12-column grid",
+          "It makes text size 6",
+          "It creates 6 websites"
+        ],
+        correct: 1,
+        explanation: "Correct! Six out of twelve columns means half a row."
+      },
+      {
+        question: "Does Bootstrap replace CSS completely?",
+        answers: [
+          "Yes, CSS is never needed",
+          "Yes, Bootstrap is a programming language",
+          "No, Bootstrap uses CSS and provides ready-made classes",
+          "No, Bootstrap only works with pictures"
+        ],
+        correct: 2,
+        explanation: "Correct! Bootstrap is a toolkit built around CSS and JavaScript."
+      }
+    ];
+
+    let questionIndex = 0;
+    let score = 0;
+    let answered = false;
+
+    function startQuiz() {
+      questionIndex = 0;
+      score = 0;
+      answered = false;
+
+      document.getElementById("quizResult").textContent = "";
+      document.getElementById("restartButton").hidden = true;
+      document.getElementById("nextButton").hidden = false;
+
+      showQuestion();
+    }
+
+    function showQuestion() {
+      answered = false;
+
+      const question = questions[questionIndex];
+
+      document.getElementById("questionNumber").textContent =
+        "Question " + (questionIndex + 1) +
+        " of " + questions.length;
+
+      document.getElementById("questionText").textContent =
+        question.question;
+
+      document.getElementById("quizFeedback").textContent = "";
+
+      document.getElementById("nextButton").disabled = true;
+
+      const options = document.getElementById("quizOptions");
+      options.innerHTML = "";
+
+      question.answers.forEach(function(answer, index) {
+        const button = document.createElement("button");
+
+        button.className = "quiz-option";
+        button.textContent = answer;
+
+        button.onclick = function() {
+          checkAnswer(index, button);
+        };
+
+        options.appendChild(button);
+      });
+    }
+
+    function checkAnswer(selected, button) {
+      if (answered) return;
+
+      answered = true;
+
+      const question = questions[questionIndex];
+      const buttons = document.querySelectorAll(".quiz-option");
+
+      buttons.forEach(function(option) {
+        option.disabled = true;
+      });
+
+      if (selected === question.correct) {
+        score++;
+
+        button.classList.add("correct");
+
+        document.getElementById("quizFeedback").textContent =
+          "✅ " + question.explanation;
+      } else {
+        button.classList.add("wrong");
+        buttons[question.correct].classList.add("correct");
+
+        document.getElementById("quizFeedback").textContent =
+          "Not quite! " + question.explanation;
+      }
+
+      const nextButton = document.getElementById("nextButton");
+
+      nextButton.disabled = false;
+
+      if (questionIndex === questions.length - 1) {
+        nextButton.textContent = "See My Score";
+      }
+    }
+
+    function nextQuestion() {
+      if (!answered) return;
+
+      if (questionIndex < questions.length - 1) {
+        questionIndex++;
+
+        document.getElementById("nextButton").textContent =
+          "Next Question →";
+
+        showQuestion();
+      } else {
+        document.getElementById("questionNumber").textContent =
+          "Quiz complete!";
+
+        document.getElementById("questionText").textContent =
+          "You finished the Bootstrap Grid Challenge!";
+
+        document.getElementById("quizOptions").innerHTML = "";
+
+        document.getElementById("quizFeedback").textContent = "";
+
+        document.getElementById("nextButton").hidden = true;
+
+        document.getElementById("restartButton").hidden = false;
+
+        document.getElementById("quizResult").textContent =
+          "🏆 Your score: " + score + " / " + questions.length +
+          ". " +
+          (score === questions.length
+            ? "Perfect score! Amazing work!"
+            : "Keep practising. You can try again!");
+      }
+    }
+
+    // START THE WEBSITE
+    setColumns(3);
+    startQuiz();
+  </script>
+
+</body>
+</html>

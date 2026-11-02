@@ -1,0 +1,73 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSS Static Position</title>
+
+    <style>
+
+        /* Styling the whole webpage */
+        body {
+            font-family: Arial;
+            background-color: lightyellow;
+            padding: 30px;
+        }
+
+        h1 {
+            color: darkorange;
+        }
+
+        /* Common styling for all boxes */
+        .box {
+            background-color: white;
+            border: 3px solid darkorange;
+            padding: 20px;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        /* Our first box */
+        .buddy {
+            position: static;
+            left: 100px;
+            top: 100px;
+        }
+
+        /* Our second box */
+        .luna {
+            position: static;
+            left: 100px;
+        top: 100px;
+        }
+
+        /* Our third box */
+        .max {
+            position: static;
+            left: 100px;
+            top: 100px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <h1>CSS Position: Static</h1>
+
+    <!-- First box -->
+    <div class="box buddy">
+        🐶 Buddy
+    </div>
+
+    <!-- Second box -->
+    <div class="box luna">
+        🐕 Luna
+    </div>
+
+    <!-- Third box -->
+    <div class="box max">
+        🐕 Max
+    </div>
+
+</body>
+</html>

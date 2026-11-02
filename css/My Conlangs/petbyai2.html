@@ -1,0 +1,289 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>CSS Position Property</title>
+
+<style>
+
+/* GENERAL STYLING */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: lightyellow;
+    padding: 75px 30px 30px;
+    min-height: 2000px;
+}
+
+h1, h2 {
+    color: darkorange;
+}
+
+p {
+    line-height: 1.6;
+}
+
+/* FIXED */
+
+.top-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    background-color: darkorange;
+    color: white;
+    padding: 14px 20px;
+
+    z-index: 100;
+}
+
+/* COMMON LIST ITEMS */
+
+.list-item {
+    background-color: white;
+    border: 2px solid darkorange;
+    padding: 10px 20px;
+    margin: 10px 0;
+}
+
+/* 1. STATIC */
+
+.static-item {
+    position: static;
+}
+
+/* 2. RELATIVE */
+
+.special-note {
+    position: relative;
+
+    left: 30px;
+    top: 10px;
+
+    background-color: gold;
+    padding: 10px 20px;
+    border: 2px solid orange;
+}
+
+/* 3. ABSOLUTE */
+
+.pet-card {
+    position: relative;
+
+    background-color: white;
+    border: 3px solid darkorange;
+    padding: 25px;
+    min-height: 150px;
+}
+
+.badge {
+    position: absolute;
+
+    top: 10px;
+    right: 10px;
+
+    background-color: green;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 5px;
+}
+
+/* 4. STICKY */
+
+.section-label {
+    position: sticky;
+
+    top: 55px;
+
+    background-color: royalblue;
+    color: white;
+    padding: 15px;
+
+    z-index: 50;
+}
+
+/* EXPLANATION BOXES */
+
+.explanation {
+    background-color: #fff3cd;
+    padding: 12px;
+    border-left: 4px solid orange;
+    margin: 15px 0;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- FIXED HEADER -->
+
+<div class="top-bar">
+    My Pet Page - Buddy the Labrador
+</div>
+
+
+<h1>Meet Buddy!</h1>
+
+<p>
+    Learn how the five CSS position values work
+    by observing the elements below.
+</p>
+
+
+<!-- 1. STATIC -->
+
+<h2>1. Static</h2>
+
+<div class="explanation">
+    Static is the default position of an HTML element.
+    It follows the normal document flow.
+    Top, right, bottom and left have no effect.
+</div>
+
+<div class="list-item static-item">
+    Breed: Labrador
+</div>
+
+<div class="list-item static-item">
+    Age: 2 years old
+</div>
+
+<div class="list-item static-item">
+    Color: Golden
+</div>
+
+
+<!-- 2. RELATIVE -->
+
+<h2>2. Relative</h2>
+
+<div class="explanation">
+    Relative moves an element from its original position.
+    Its original space remains reserved.
+</div>
+
+<p>
+    This note shifts 30px right and 10px down
+    from its original position.
+</p>
+
+<div class="special-note">
+    Pet of the month!
+</div>
+
+<div class="list-item">
+    This element stays in its normal position.
+</div>
+
+
+<!-- 3. ABSOLUTE -->
+
+<h2>3. Absolute</h2>
+
+<div class="explanation">
+    Absolute removes an element from normal document flow.
+    It positions itself relative to its nearest positioned ancestor.
+</div>
+
+<p>
+    The badge is pinned to the top-right corner of the card.
+</p>
+
+<div class="pet-card">
+
+    <p>
+        Buddy - Labrador, 2 years
+    </p>
+
+    <p>
+        Friendly and playful dog.
+    </p>
+
+    <div class="badge">
+        Adopted!
+    </div>
+
+</div>
+
+
+<!-- 4. FIXED -->
+
+<h2>4. Fixed</h2>
+
+<div class="explanation">
+    Fixed positions an element relative to the viewport
+    in the usual case. It stays in the same screen position
+    even when you scroll.
+</div>
+
+<p>
+    Look at the orange navigation bar at the top.
+    Scroll the page and notice that it remains there.
+</p>
+
+
+<!-- 5. STICKY -->
+
+<h2>5. Sticky</h2>
+
+<div class="explanation">
+    Sticky initially behaves like a normal element.
+    When it reaches top: 55px, it sticks below the
+    navigation bar while scrolling.
+</div>
+
+<p>
+    Scroll down and watch the blue label.
+</p>
+
+<div class="section-label">
+    More Pets Available - I am Sticky!
+</div>
+
+<div class="list-item">Luna - Poodle, 1 year</div>
+<div class="list-item">Max - German Shepherd, 3 years</div>
+<div class="list-item">Daisy - Beagle, 4 years</div>
+<div class="list-item">Rocky - Golden Retriever, 2 years</div>
+<div class="list-item">Bella - Border Collie, 1 year</div>
+<div class="list-item">Charlie - Shih Tzu, 5 years</div>
+<div class="list-item">Coco - Husky, 3 years</div>
+<div class="list-item">Milo - Tabby Cat, 2 years</div>
+<div class="list-item">Oliver - Persian Cat, 2 years</div>
+<div class="list-item">Leo - Labrador, 3 years</div>
+
+
+<!-- FINAL SUMMARY -->
+
+<h2>Quick Revision</h2>
+
+<div class="list-item">
+    <strong>Static:</strong> Normal document flow.
+</div>
+
+<div class="list-item">
+    <strong>Relative:</strong> Moves from its original position.
+</div>
+
+<div class="list-item">
+    <strong>Absolute:</strong> Positioned relative to a positioned ancestor.
+</div>
+
+<div class="list-item">
+    <strong>Fixed:</strong> Stays in the same viewport position.
+</div>
+
+<div class="list-item">
+    <strong>Sticky:</strong> Sticks when it reaches a scroll threshold.
+</div>
+
+</body>
+</html>

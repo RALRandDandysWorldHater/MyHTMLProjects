@@ -1,0 +1,602 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>CSS Positioning Playground</title>
+
+<style>
+
+/* =========================
+   GLOBAL STYLING
+========================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #fffaf0;
+    color: #333;
+    line-height: 1.6;
+}
+
+h1, h2, h3 {
+    color: #d97706;
+}
+
+.container {
+    width: min(1000px, 92%);
+    margin: auto;
+}
+
+section {
+    margin: 55px 0;
+    padding: 25px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px #00000010;
+}
+
+.explanation {
+    background: #fff7df;
+    border-left: 5px solid orange;
+    padding: 12px 18px;
+    margin: 15px 0;
+}
+
+/* =========================
+   FIXED POSITION
+========================= */
+
+.top-bar {
+    position: fixed;
+
+    top: 0;
+    left: 0;
+    width: 100%;
+
+    padding: 14px;
+    background: #d97706;
+    color: white;
+    text-align: center;
+
+    z-index: 1000;
+}
+
+body {
+    padding-top: 65px;
+}
+
+/* =========================
+   COMMON CARDS
+========================= */
+
+.pet {
+    background: #fff;
+    border: 2px solid #f59e0b;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 12px 0;
+}
+
+.normal {
+    background: #e0f2fe;
+    border-color: #0284c7;
+}
+
+/* =========================
+   1. STATIC
+========================= */
+
+.static-box {
+    position: static;
+}
+
+/* =========================
+   2. RELATIVE
+========================= */
+
+.relative-box {
+    position: relative;
+
+    left: 35px;
+    top: 10px;
+
+    background: #fef08a;
+    border-color: #ca8a04;
+}
+
+.original-space {
+    border: 2px dashed #999;
+    padding: 12px;
+    margin-top: 15px;
+    color: #666;
+}
+
+/* =========================
+   3. ABSOLUTE
+========================= */
+
+.pet-card {
+    position: relative;
+
+    min-height: 180px;
+    padding: 25px;
+
+    background: #ecfccb;
+    border: 3px solid #65a30d;
+    border-radius: 10px;
+}
+
+.badge {
+    position: absolute;
+
+    top: 10px;
+    right: 10px;
+
+    background: #16a34a;
+    color: white;
+
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+.anchor-label {
+    color: #4d7c0f;
+    font-size: 13px;
+}
+
+/* =========================
+   4. FIXED
+========================= */
+
+.fixed-example {
+    position: fixed;
+
+    right: 20px;
+    bottom: 20px;
+
+    background: #7c3aed;
+    color: white;
+
+    padding: 12px 18px;
+    border-radius: 10px;
+
+    z-index: 900;
+    box-shadow: 0 4px 12px #0003;
+}
+
+/* =========================
+   5. STICKY
+========================= */
+
+.sticky-label {
+    position: sticky;
+
+    top: 65px;
+
+    background: #2563eb;
+    color: white;
+
+    padding: 15px;
+    border-radius: 8px;
+
+    z-index: 10;
+}
+
+.pet-list {
+    border: 2px dashed #93c5fd;
+    padding: 12px;
+    border-radius: 10px;
+}
+
+.pet-list .pet {
+    background: #eff6ff;
+    border-color: #93c5fd;
+}
+
+/* =========================
+   COMPARISON
+========================= */
+
+.comparison {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 500px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+th {
+    background: #ffedd5;
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+footer {
+    text-align: center;
+    padding: 30px;
+    color: #777;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- FIXED HEADER -->
+
+<div class="top-bar">
+    🐶 Buddy's Pet Adoption Center
+</div>
+
+<!-- FIXED FLOATING ELEMENT -->
+
+<div class="fixed-example">
+    I am FIXED!
+</div>
+
+<div class="container">
+
+<header>
+    <h1>CSS Position Property</h1>
+
+    <p>
+        Learn how CSS positions elements on a webpage.
+        Scroll through each example and observe what happens.
+    </p>
+</header>
+
+
+<!-- =========================
+     1. STATIC
+========================= -->
+
+<section>
+
+<h2>1. Position: Static</h2>
+
+<div class="explanation">
+
+    <strong>Concept:</strong>
+
+    Static is the default positioning of every HTML element.
+
+    The element follows the normal document flow.
+
+    The properties top, right, bottom and left do not move it.
+
+</div>
+
+<div class="pet normal">
+    Buddy - Normal element
+</div>
+
+<div class="pet static-box">
+    🐶 Luna - position: static
+</div>
+
+<div class="pet normal">
+    Max - Normal element
+</div>
+
+<p>
+    <strong>Observe:</strong>
+    All three elements appear one after another.
+    Static does not create any special movement.
+</p>
+
+</section>
+
+
+<!-- =========================
+     2. RELATIVE
+========================= -->
+
+<section>
+
+<h2>2. Position: Relative</h2>
+
+<div class="explanation">
+
+    <strong>Concept:</strong>
+
+    Relative moves an element from its original position.
+
+    However, its original space remains reserved.
+
+    Other elements behave as if the element is still in its original position.
+
+</div>
+
+<div class="pet normal">
+    Buddy - Before relative element
+</div>
+
+<div class="original-space">
+
+    Original position of Daisy would be here.
+
+    <div class="pet relative-box">
+
+        🐶 Daisy - position: relative
+
+        <br>
+
+        left: 35px;
+        <br>
+        top: 10px;
+
+    </div>
+
+</div>
+
+<div class="pet normal">
+    Rocky - After relative element
+</div>
+
+<p>
+    <strong>Observe:</strong>
+
+    Daisy moves 35px right and 10px down.
+
+    But the original space is still occupied.
+    Rocky does not move into that space.
+</p>
+
+</section>
+
+
+<!-- =========================
+     3. ABSOLUTE
+========================= -->
+
+<section>
+
+<h2>3. Position: Absolute</h2>
+
+<div class="explanation">
+
+    <strong>Concept:</strong>
+
+    Absolute removes an element from normal document flow.
+
+    It positions itself relative to its nearest positioned ancestor.
+
+    Here, the pet-card has position: relative.
+
+</div>
+
+<div class="pet normal">
+    Buddy - Before the card
+</div>
+
+<div class="pet-card">
+
+    <div class="anchor-label">
+        PARENT: position: relative
+    </div>
+
+    <h3>🐶 Buddy the Labrador</h3>
+
+    <p>
+        Age: 2 years
+        <br>
+        Breed: Labrador
+        <br>
+        Status: Available for adoption
+    </p>
+
+    <div class="badge">
+        ADOPTED!
+    </div>
+
+</div>
+
+<div class="pet normal">
+    Max - After the card
+</div>
+
+<p>
+    <strong>Observe:</strong>
+
+    The badge is positioned 10px from the card's
+    top and right edges.
+
+    The badge is not positioned relative to the
+    entire webpage because its parent is positioned.
+</p>
+
+</section>
+
+
+<!-- =========================
+     4. FIXED
+========================= -->
+
+<section>
+
+<h2>4. Position: Fixed</h2>
+
+<div class="explanation">
+
+    <strong>Concept:</strong>
+
+    Fixed positions an element relative to the viewport
+    in the usual case.
+
+    It stays at the same screen position when you scroll.
+
+    It is removed from normal document flow.
+
+</div>
+
+<div class="pet">
+    Fixed elements can be useful for floating buttons,
+    chat buttons and navigation bars.
+</div>
+
+<p>
+    Look at the purple box in the bottom-right corner.
+
+    Scroll the page up and down.
+
+    Notice that it remains in the same position.
+</p>
+
+</section>
+
+
+<!-- =========================
+     5. STICKY
+========================= -->
+
+<section>
+
+<h2>5. Position: Sticky</h2>
+
+<div class="explanation">
+
+    <strong>Concept:</strong>
+
+    Sticky is a combination of relative and fixed-like
+    scrolling behavior.
+
+    Initially, it behaves like a normal element.
+
+    When it reaches top: 65px, it sticks there
+    while scrolling within its scrolling container.
+
+</div>
+
+<p>
+    Scroll down through the pet list.
+</p>
+
+<div class="pet-list">
+
+    <div class="sticky-label">
+        📌 MORE PETS AVAILABLE - I AM STICKY!
+    </div>
+
+    <div class="pet">Luna - Poodle - 1 year</div>
+    <div class="pet">Max - German Shepherd - 3 years</div>
+    <div class="pet">Daisy - Beagle - 4 years</div>
+    <div class="pet">Rocky - Golden Retriever - 2 years</div>
+    <div class="pet">Bella - Border Collie - 1 year</div>
+    <div class="pet">Charlie - Shih Tzu - 5 years</div>
+    <div class="pet">Coco - Husky - 3 years</div>
+    <div class="pet">Milo - Tabby Cat - 2 years</div>
+    <div class="pet">Oliver - Persian Cat - 2 years</div>
+    <div class="pet">Leo - Beagle - 3 years</div>
+    <div class="pet">Daisy 2 - Golden Retriever - 1 year</div>
+
+</div>
+
+<p>
+    <strong>Observe:</strong>
+
+    The blue label starts in its normal position.
+
+    As you scroll, it sticks below the orange navigation bar.
+
+    Once its containing section ends, it stops sticking.
+</p>
+
+</section>
+
+
+<!-- =========================
+     COMPARISON TABLE
+========================= -->
+
+<section>
+
+<h2>Final Comparison</h2>
+
+<div class="comparison">
+
+<table>
+
+<thead>
+<tr>
+    <th>Position</th>
+    <th>Normal Flow?</th>
+    <th>Moves?</th>
+    <th>Scroll Behavior</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr>
+    <td>Static</td>
+    <td>Yes</td>
+    <td>No special movement</td>
+    <td>Scrolls normally</td>
+</tr>
+
+<tr>
+    <td>Relative</td>
+    <td>Yes</td>
+    <td>From original position</td>
+    <td>Scrolls normally</td>
+</tr>
+
+<tr>
+    <td>Absolute</td>
+    <td>No</td>
+    <td>From positioned ancestor</td>
+    <td>Scrolls normally</td>
+</tr>
+
+<tr>
+    <td>Fixed</td>
+    <td>No</td>
+    <td>Relative to viewport</td>
+    <td>Stays in screen position</td>
+</tr>
+
+<tr>
+    <td>Sticky</td>
+    <td>Yes</td>
+    <td>Sticks after threshold</td>
+    <td>Sticks within its container</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</section>
+
+<footer>
+    CSS Positioning Playground ❤️
+</footer>
+
+</div>
+
+</body>
+</html>

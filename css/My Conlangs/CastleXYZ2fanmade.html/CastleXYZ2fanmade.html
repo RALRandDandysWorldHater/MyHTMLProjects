@@ -1,0 +1,435 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Castle XYZ</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #15152b;
+    color: white;
+}
+
+/* HEADER */
+
+header {
+    background: #292952;
+    padding: 20px;
+    text-align: center;
+    border-bottom: 4px solid gold;
+}
+
+header h1 {
+    font-size: 40px;
+    color: gold;
+    margin: 5px;
+}
+
+header p {
+    color: #ddd;
+}
+
+/* NAVIGATION */
+
+nav {
+    background: #39396b;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 15px;
+}
+
+nav button {
+    background: #5555a0;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+nav button:hover {
+    background: gold;
+    color: black;
+}
+
+/* HERO */
+
+.hero {
+    text-align: center;
+    padding: 70px 20px;
+    background: linear-gradient(#292952, #15152b);
+}
+
+.hero h2 {
+    font-size: 38px;
+    color: gold;
+}
+
+.hero button {
+    background: gold;
+    border: none;
+    padding: 15px 30px;
+    font-size: 17px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+/* SECTIONS */
+
+section {
+    padding: 30px;
+    display: none;
+}
+
+section.active {
+    display: block;
+}
+
+.section-title {
+    color: gold;
+    text-align: center;
+    font-size: 30px;
+}
+
+/* CARDS */
+
+.container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    background: #292952;
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    border: 2px solid #5555a0;
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-7px);
+    border-color: gold;
+}
+
+.card .icon {
+    font-size: 55px;
+}
+
+.card h3 {
+    color: gold;
+}
+
+/* SEARCH */
+
+.search {
+    display: block;
+    margin: 20px auto;
+    padding: 14px;
+    width: 90%;
+    max-width: 400px;
+    border-radius: 10px;
+    border: none;
+}
+
+/* FOOTER */
+
+footer {
+    background: #292952;
+    text-align: center;
+    padding: 25px;
+    margin-top: 40px;
+    color: #ccc;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🏰 CASTLE XYZ</h1>
+    <p>Welcome to the World of Castle XYZ!</p>
+</header>
+
+<nav>
+    <button onclick="showPage('home')">Home</button>
+    <button onclick="showPage('characters')">Characters</button>
+    <button onclick="showPage('creatures')">Hostile Creatures</button>
+    <button onclick="showPage('worlds')">Worlds</button>
+    <button onclick="showPage('trivia')">Trivia</button>
+    <button onclick="showPage('games')">Games</button>
+</nav>
+
+<!-- HOME -->
+
+<section id="home" class="active">
+
+<div class="hero">
+    <h2>Welcome to Castle XYZ!</h2>
+
+    <p>
+        Explore amazing characters, discover hostile
+        creatures, and learn about mysterious worlds!
+    </p>
+
+    <button onclick="showPage('characters')">
+        Explore the Castle!
+    </button>
+</div>
+
+<h2 class="section-title">Explore Castle XYZ</h2>
+
+<div class="container">
+
+    <div class="card">
+        <div class="icon">🧑</div>
+        <h3>Characters</h3>
+        <p>Discover the characters of Castle XYZ.</p>
+    </div>
+
+    <div class="card">
+        <div class="icon">👾</div>
+        <h3>Hostile Creatures</h3>
+        <p>Learn about the creatures!</p>
+    </div>
+
+    <div class="card">
+        <div class="icon">🌍</div>
+        <h3>Worlds</h3>
+        <p>Explore different locations.</p>
+    </div>
+
+</div>
+</section>
+
+<!-- CHARACTERS -->
+
+<section id="characters">
+
+<h2 class="section-title">🧑 Characters</h2>
+
+<input class="search" id="characterSearch"
+placeholder="Search characters..."
+onkeyup="searchCards('characterSearch','characterCard')">
+
+<div class="container">
+
+    <div class="card characterCard">
+        <div class="icon">👑</div>
+        <h3>Castle King</h3>
+        <p>A mysterious castle ruler.</p>
+    </div>
+
+    <div class="card characterCard">
+        <div class="icon">🛡️</div>
+        <h3>Castle Guard</h3>
+        <p>A guardian of the castle.</p>
+    </div>
+
+    <div class="card characterCard">
+        <div class="icon">🧙</div>
+        <h3>Wizard</h3>
+        <p>A magical character.</p>
+    </div>
+
+</div>
+</section>
+
+<!-- HOSTILE CREATURES -->
+
+<section id="creatures">
+
+<h2 class="section-title">👾 Hostile Creatures</h2>
+
+<input class="search" id="creatureSearch"
+placeholder="Search hostile creatures..."
+onkeyup="searchCards('creatureSearch','creatureCard')">
+
+<div class="container">
+
+    <div class="card creatureCard">
+        <div class="icon">👹</div>
+        <h3>Shadow Monster</h3>
+        <p>A mysterious creature hiding in darkness.</p>
+    </div>
+
+    <div class="card creatureCard">
+        <div class="icon">🐉</div>
+        <h3>Dragon Beast</h3>
+        <p>A powerful fantasy creature.</p>
+    </div>
+
+    <div class="card creatureCard">
+        <div class="icon">👻</div>
+        <h3>Ghost Creature</h3>
+        <p>A mysterious ghostly creature.</p>
+    </div>
+
+</div>
+</section>
+
+<!-- WORLDS -->
+
+<section id="worlds">
+
+<h2 class="section-title">🌍 Castle Worlds</h2>
+
+<div class="container">
+
+    <div class="card">
+        <div class="icon">🏰</div>
+        <h3>Castle World</h3>
+        <p>The main castle location.</p>
+    </div>
+
+    <div class="card">
+        <div class="icon">🌲</div>
+        <h3>Dark Forest</h3>
+        <p>A mysterious forest.</p>
+    </div>
+
+    <div class="card">
+        <div class="icon">🌋</div>
+        <h3>Lava World</h3>
+        <p>A world full of lava.</p>
+    </div>
+
+</div>
+</section>
+
+<!-- TRIVIA -->
+
+<section id="trivia">
+
+<h2 class="section-title">📖 Castle XYZ Trivia</h2>
+
+<div class="container">
+
+    <div class="card">
+        <h3>Trivia #1</h3>
+        <p>Castle XYZ is an imaginary fantasy world.</p>
+    </div>
+
+    <div class="card">
+        <h3>Trivia #2</h3>
+        <p>The castle has many mysterious locations.</p>
+    </div>
+
+    <div class="card">
+        <h3>Trivia #3</h3>
+        <p>You can add your own Castle XYZ facts!</p>
+    </div>
+
+</div>
+</section>
+
+<!-- GAMES -->
+
+<section id="games">
+
+<h2 class="section-title">🎮 Castle XYZ Games</h2>
+
+<div class="card">
+
+    <h3>Guess the Castle Number!</h3>
+
+    <p>Guess a number between 1 and 10.</p>
+
+    <input type="number" id="guess"
+    min="1" max="10">
+
+    <button onclick="playGame()">
+        Guess!
+    </button>
+
+    <p id="gameResult"></p>
+
+</div>
+</section>
+
+<footer>
+    <h3>🏰 Castle XYZ</h3>
+    <p>Created by You!</p>
+    <p>© 2026 Castle XYZ Fan Website</p>
+</footer>
+
+<script>
+
+// PAGE NAVIGATION
+
+function showPage(page) {
+
+    document.querySelectorAll("section").forEach(section => {
+        section.classList.remove("active");
+    });
+
+    document.getElementById(page).classList.add("active");
+
+    window.scrollTo(0, 0);
+}
+
+// SEARCH SYSTEM
+
+function searchCards(inputId, cardClass) {
+
+    let input = document.getElementById(inputId)
+    .value.toLowerCase();
+
+    let cards = document.querySelectorAll("." + cardClass);
+
+    cards.forEach(card => {
+
+        let text = card.innerText.toLowerCase();
+
+        card.style.display =
+        text.includes(input) ? "block" : "none";
+
+    });
+}
+
+// GUESSING GAME
+
+let secretNumber = Math.floor(Math.random() * 10) + 1;
+
+function playGame() {
+
+    let guess = Number(document.getElementById("guess").value);
+
+    let result = document.getElementById("gameResult");
+
+    if (guess === secretNumber) {
+
+        result.innerText = "🎉 Correct! You won!";
+
+        secretNumber = Math.floor(Math.random() * 10) + 1;
+
+    } else if (guess >= 1 && guess <= 10) {
+
+        result.innerText = "❌ Try again!";
+
+    } else {
+
+        result.innerText = "Enter a number from 1 to 10!";
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
+```

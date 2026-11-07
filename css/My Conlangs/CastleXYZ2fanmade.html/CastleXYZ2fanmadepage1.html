@@ -1,0 +1,519 @@
+<```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Castle XYZ Wiki</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #151525;
+    color: white;
+}
+
+/* HEADER */
+
+header {
+    background: #25254a;
+    padding: 25px;
+    text-align: center;
+    border-bottom: 4px solid gold;
+}
+
+header h1 {
+    color: gold;
+    font-size: 42px;
+    margin: 5px;
+}
+
+header p {
+    color: #ddd;
+}
+
+/* NAVIGATION */
+
+nav {
+    background: #35355e;
+    padding: 12px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+nav button {
+    background: #55558c;
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+nav button:hover {
+    background: gold;
+    color: black;
+}
+
+/* MAIN */
+
+main {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+}
+
+.page {
+    display: none;
+}
+
+.page.active {
+    display: block;
+}
+
+h2 {
+    color: gold;
+    text-align: center;
+}
+
+/* HERO */
+
+.hero {
+    background: linear-gradient(135deg, #34346d, #17172b);
+    padding: 55px 20px;
+    text-align: center;
+    border-radius: 15px;
+    margin-bottom: 25px;
+}
+
+.hero h2 {
+    font-size: 38px;
+}
+
+.hero button {
+    padding: 14px 25px;
+    background: gold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* CARDS */
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 18px;
+}
+
+.card {
+    background: #29294d;
+    padding: 22px;
+    border: 2px solid #51518a;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.card:hover {
+    border-color: gold;
+    transform: translateY(-4px);
+}
+
+.icon {
+    font-size: 50px;
+}
+
+.card h3 {
+    color: gold;
+}
+
+/* SEARCH */
+
+input {
+    display: block;
+    width: 90%;
+    max-width: 450px;
+    margin: 20px auto;
+    padding: 14px;
+    border-radius: 8px;
+    border: none;
+}
+
+/* STATUS */
+
+.selected {
+    color: lightgreen;
+}
+
+.cancelled {
+    color: orange;
+}
+
+.scrapped {
+    color: #ff7777;
+}
+
+/* BOSS */
+
+.boss {
+    background: linear-gradient(135deg, #6d2626, #29294d);
+    border: 3px solid gold;
+    padding: 30px;
+    text-align: center;
+    border-radius: 15px;
+    margin: 20px 0;
+}
+
+.boss .icon {
+    font-size: 90px;
+}
+
+/* FOOTER */
+
+footer {
+    background: #25254a;
+    text-align: center;
+    padding: 25px;
+    margin-top: 40px;
+    color: #ccc;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🏰 CASTLE XYZ</h1>
+    <p>The Ultimate Castle XYZ Encyclopedia</p>
+</header>
+
+<nav>
+    <button onclick="showPage('home')">Home</button>
+    <button onclick="showPage('boss')">Final Boss</button>
+    <button onclick="showPage('hostile')">Hostile Creatures</button>
+    <button onclick="showPage('flying')">Flying Creatures</button>
+    <button onclick="showPage('selected')">Selected Creatures</button>
+    <button onclick="showPage('status')">Creature Status</button>
+</nav>
+
+<main>
+
+<!-- HOME -->
+
+<section id="home" class="page active">
+
+<div class="hero">
+    <h2>Welcome to Castle XYZ!</h2>
+
+    <p>
+        Discover Hostile Creatures, Flying Creatures,
+        and the mysterious Final Boss!
+    </p>
+
+    <button onclick="showPage('boss')">
+        Meet the Final Boss
+    </button>
+</div>
+
+<h2>Explore Castle XYZ</h2>
+
+<div class="grid">
+
+<div class="card">
+    <div class="icon">👑</div>
+    <h3>Final Boss</h3>
+    <p>Mametchi is the ultimate summoner.</p>
+</div>
+
+<div class="card">
+    <div class="icon">👾</div>
+    <h3>Hostile Creatures</h3>
+    <p>Mametchi's hostile creature army.</p>
+</div>
+
+<div class="card">
+    <div class="icon">🪽</div>
+    <h3>Flying Creatures</h3>
+    <p>Mametchi's flying creature army.</p>
+</div>
+
+</div>
+
+</section>
+
+<!-- FINAL BOSS -->
+
+<section id="boss" class="page">
+
+<h2>👑 FINAL BOSS</h2>
+
+<div class="boss">
+
+<div class="icon">🥚</div>
+
+<h1>Mametchi</h1>
+
+<h3>The Hostile Creatures & Flying Creatures Summoner</h3>
+
+<p><b>Role:</b> Final Boss</p>
+
+<p><b>Affiliation:</b> Hostile Creatures' Side</p>
+
+<p><b>Summons:</b> Hostile Creatures and Flying Creatures</p>
+
+<p><b>Rank:</b> Ultimate Boss</p>
+
+</div>
+
+<h2>Mametchi's Armies</h2>
+
+<div class="grid">
+
+<div class="card">
+    <div class="icon">👾</div>
+    <h3>Hostile Creatures</h3>
+    <p>His hostile creature army.</p>
+</div>
+
+<div class="card">
+    <div class="icon">🪽</div>
+    <h3>Flying Creatures</h3>
+    <p>His flying creature army.</p>
+</div>
+
+</div>
+
+</section>
+
+<!-- HOSTILE CREATURES -->
+
+<section id="hostile" class="page">
+
+<h2>👾 Hostile Creatures</h2>
+
+<input id="hostileSearch"
+placeholder="Search Hostile Creatures..."
+oninput="searchCards('hostileSearch','hostileCard')">
+
+<div class="grid">
+
+<div class="card hostileCard">
+    <div class="icon">🐭</div>
+    <h3>Dark Mouse</h3>
+    <p>Small Animal-Like Creature</p>
+    <p class="selected">Selected</p>
+</div>
+
+<div class="card hostileCard">
+    <div class="icon">🐀</div>
+    <h3>Shadow Rat</h3>
+    <p>Small Animal-Like Creature</p>
+    <p class="selected">Selected</p>
+</div>
+
+<div class="card hostileCard">
+    <div class="icon">👻</div>
+    <h3>Dark Phantom</h3>
+    <p>Ghost Creature</p>
+</div>
+
+<div class="card hostileCard">
+    <div class="icon">🧟</div>
+    <h3>Flesh Golem</h3>
+    <p>Monster Creature</p>
+</div>
+
+<div class="card hostileCard">
+    <div class="icon">🟣</div>
+    <h3>Dark Slime</h3>
+    <p>Slime Creature</p>
+</div>
+
+<div class="card hostileCard">
+    <div class="icon">🤖</div>
+    <h3>Robo Brute</h3>
+    <p>Mechanical Creature</p>
+</div>
+
+<div class="card hostileCard">
+    <div class="icon">🌑</div>
+    <h3>Void Monster</h3>
+    <p>Shadow Creature</p>
+</div>
+
+<div class="card hostileCard">
+    <div class="icon">🗿</div>
+    <h3>Frost Golem</h3>
+    <p>Elemental Creature</p>
+</div>
+
+</div>
+
+</section>
+
+<!-- FLYING CREATURES -->
+
+<section id="flying" class="page">
+
+<h2>🪽 Flying Creatures</h2>
+
+<input id="flyingSearch"
+placeholder="Search Flying Creatures..."
+oninput="searchCards('flyingSearch','flyingCard')">
+
+<div class="grid">
+
+<div class="card flyingCard">
+    <div class="icon">🐦‍⬛</div>
+    <h3>Shadow Raven</h3>
+</div>
+
+<div class="card flyingCard">
+    <div class="icon">🦅</div>
+    <h3>Doom Eagle</h3>
+</div>
+
+<div class="card flyingCard">
+    <div class="icon">🦉</div>
+    <h3>Nightmare Owl</h3>
+</div>
+
+<div class="card flyingCard">
+    <div class="icon">🦇</div>
+    <h3>Shadow Bat</h3>
+</div>
+
+<div class="card flyingCard">
+    <div class="icon">🦅</div>
+    <h3>Dark Falcon</h3>
+</div>
+
+<div class="card flyingCard">
+    <div class="icon">🐉</div>
+    <h3>Stormwing</h3>
+</div>
+
+</div>
+
+</section>
+
+<!-- SELECTED CREATURES -->
+
+<section id="selected" class="page">
+
+<h2>⭐ Selected Hostile Creatures</h2>
+
+<div class="grid">
+
+<div class="card">
+    <div class="icon">🐭</div>
+    <h3>Dark Mouse</h3>
+    <p>Creature #359</p>
+    <p class="selected">✓ Selected</p>
+</div>
+
+<div class="card">
+    <div class="icon">🐀</div>
+    <h3>Shadow Rat</h3>
+    <p>Creature #360</p>
+    <p class="selected">✓ Selected</p>
+</div>
+
+</div>
+
+</section>
+
+<!-- CREATURE STATUS -->
+
+<section id="status" class="page">
+
+<h2>📋 Creature Status</h2>
+
+<div class="grid">
+
+<div class="card">
+    <h3>Dark Mouse</h3>
+    <p>Creature #359</p>
+    <p class="selected">✓ Selected</p>
+</div>
+
+<div class="card">
+    <h3>Shadow Rat</h3>
+    <p>Creature #360</p>
+    <p class="selected">✓ Selected</p>
+</div>
+
+<div class="card">
+    <h3>Doom Rabbit</h3>
+    <p>Creature #213</p>
+    <p class="scrapped">✗ Scrapped</p>
+</div>
+
+<div class="card">
+    <h3>Frost Hare</h3>
+    <p>Creature #287</p>
+    <p class="cancelled">✗ Cancelled</p>
+</div>
+
+</div>
+
+</section>
+
+</main>
+
+<footer>
+    <h3>🏰 Castle XYZ Wiki</h3>
+    <p>Mametchi's Creature Universe</p>
+    <p>Fan-made website project</p>
+</footer>
+
+<script>
+
+// PAGE NAVIGATION
+
+function showPage(page) {
+
+    document.querySelectorAll('.page').forEach(section => {
+        section.classList.remove('active');
+    });
+
+    document.getElementById(page).classList.add('active');
+
+    window.scrollTo(0,0);
+}
+
+// SEARCH SYSTEM
+
+function searchCards(inputId, cardClass) {
+
+    let search = document.getElementById(inputId)
+        .value.toLowerCase();
+
+    let cards = document.querySelectorAll('.' + cardClass);
+
+    cards.forEach(card => {
+
+        let name = card.innerText.toLowerCase();
+
+        card.style.display =
+            name.includes(search) ? '' : 'none';
+
+    });
+
+}
+
+</script>
+
+</body>
+</html>
+```

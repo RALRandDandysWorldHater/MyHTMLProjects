@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Super Mario Maker 10 - Fan Edition</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #14213d;
+    color: white;
+    text-align: center;
+}
+
+header {
+    background: #e63946;
+    padding: 18px 10px;
+    border-bottom: 5px solid #a4161a;
+}
+
+header h1 {
+    margin: 0;
+    font-size: clamp(22px, 4vw, 38px);
+}
+
+header p {
+    margin-bottom: 0;
+}
+
+.toolbar {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 15px 8px;
+    background: #1d3557;
+}
+
+button {
+    padding: 10px 14px;
+    border: 2px solid #fff;
+    border-radius: 8px;
+    background: #457b9d;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1d9bf0;
+}
+
+button.active {
+    background: #2a9d8f;
+    border-color: #ffe66d;
+}
+
+#status {
+    padding: 10px;
+    color: #ffe66d;
+    font-weight: bold;
+}
+
+.game-container {
+    width: min(96%, 800px);
+    margin: 10px auto;
+    padding: 8px;
+    background: #fff;
+    border: 5px solid #f1faee;
+    border-radius: 10px;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    image-rendering: pixelated;
+    cursor: crosshair;
+    background: #87ceeb;
+}
+
+.instructions {
+    width: min(95%, 800px);
+    margin: 20px auto;
+    padding: 16px;
+    background: #1d3557;
+    border-radius: 12px;
+    line-height: 1.8;
+}
+
+.instructions h2 {
+    color: #ffe66d;
+}
+
+footer {
+    padding: 20px;
+    color: #bde0fe;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🍄 SUPER MARIO MAKER 10 🍄</h1>
+    <p>Build your own levels. Play your own adventures!</p>
+    <p>FAN-MADE EDITION</p>
+</header>
+
+<div class="toolbar">
+    <button class="active" data-tool="1">🟩 Ground</button>
+    <button data-tool="2">🧱 Brick</button>
+    <button data-tool="3">🪙 Coin</button>
+    <button data-tool="4">🐢 Enemy</button>
+    <button data-tool="5">🏁 Start</button>
+    <button data-tool="0">🧹 Eraser</button>
+</div>
+
+<div class="toolbar">
+    <button id="playButton">▶ Play Level</button>
+    <button id="editButton">✏️ Edit Level</button>
+    <button id="saveButton">💾 Save Level</button>
+    <button id="loadButton">📂 Load Level</button>
+    <button id="clearButton">🗑️ Clear Level</button>
+</div>
+
+<div id="status">Editor Mode: Choose a block and click the grid!</div>
+
+<div class="game-container">
+    <canvas id="game" width="768" height="448"></canvas>
+</div>
+
+<div class="instructions">
+    <h2>🎮 How to Play</h2>
+    <p>
+        <b>BUILD:</b> Select a block above and click the grid.<br>
+        <b>MOVE:</b> Use the LEFT and RIGHT arrow keys.<br>
+        <b>JUMP:</b> Press SPACE or the UP arrow.<br>
+        <b>COLLECT:</b> Touch the coins to collect them.<br>
+        <b>WIN:</b> Reach the finish flag on the right side.<br>
+        <b>EDIT:</b> Return to the editor to change your level.
+    </p>
+    <p>
+        Tip: Place ground underneath Mario so he doesn't fall!
+    </p>
+</div>
+
+<footer>
+    Super Mario Maker 10 — Fan Edition 🍄
+</footer>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const statusText = document.getElementById("status");
+
+const TILE = 32;
+const COLS = 24;
+const ROWS = 14;
+
+const EMPTY = 0;
+const GROUND = 1;
+const BRICK = 2;
+const COIN = 3;
+const ENEMY = 4;
+const START = 5;
+
+let map = [];
+let selectedTool = GROUND;
+let mode = "edit";
+let keys = {};
+let coinsCollected = 0;
+let gameWon = false;
+let previousTime = 0;
+let lastEnemyUpdate = 0;
+
+const player = {
+    x: 48,
+    y: 0,
+    w: 22,
+    h: 28,
+    vx: 0,
+    vy: 0,
+    speed: 3.5,
+    jump: -10,
+    grounded: false
+};
+
+function newLevel() {
+    map = [];
+
+    for (let y = 0; y < ROWS; y++) {
+        map[y] = [];
+
+        for (let x = 0; x < COLS; x++) {
+            map[y][x] = EMPTY;
+        }
+    }
+
+    // Create the starting ground.
+    for (let x = 0; x < COLS; x++) {
+        map[ROWS - 1][x] = GROUND;
+    }
+
+    // Place a few example platforms and coins.
+    map[9][5] = BRICK;
+    map[9][6] = BRICK;
+    map[9][7] = COIN;
+    map[7][10] = BRICK;
+    map[7][11] = COIN;
+    map[10][15] = COIN;
+    map[ROWS - 2][2] = START;
+}
+
+function getTile(x, y) {
+    if (x < 0 || x >= COLS || y >= ROWS) {
+        return GROUND;
+    }
+
+    if (y < 0) {
+        return EMPTY;
+    }
+
+    return map[y][x];
+}
+
+function isSolid(tile) {
+    return tile === GROUND || tile === BRICK;
+}
+
+function resetPlayer() {
+    let startX = 1;
+    let startY = ROWS - 2;
+
+    for (let y = 0; y < ROWS; y++) {
+        for (let x = 0; x < COLS; x++) {
+            if (map[y][x] === START) {
+                startX = x;
+                startY = y;
+            }
+        }
+    }
+
+    player.x = startX * TILE + 5;
+    player.y = startY * TILE - player.h + TILE;
+    player.vx = 0;
+    player.vy = 0;
+    player.grounded = false;
+
+    // If the starting position is on a ground tile,
+    // position Mario on top of that tile.
+    if (isSolid(getTile(startX, startY))) {
+        player.y = startY * TILE - player.h;
+    }
+
+    coinsCollected = 0;
+    gameWon = false;
+}
+
+function setTool(tool) {
+    selectedTool = tool;
+
+    document.querySelectorAll("[data-tool]").forEach(button => {
+        button.classList.toggle(
+            "active",
+            Number(button.dataset.tool) === tool
+        );
+    });
+
+    if (mode !== "edit") {
+        setMode("edit");
+    }
+
+    statusText.textContent =
+        "Selected: " + toolName(tool) + ". Click the grid!";
+}
+
+function toolName(tool) {
+    return {
+        0: "Eraser",
+        1: "Ground",
+        2: "Brick",
+        3: "Coin",
+        4: "Enemy",
+        5: "Start"
+    }[tool];
+}
+
+document.querySelectorAll("[data-tool]").forEach(button => {
+    button.addEventListener("click", () => {
+        setTool(Number(button.dataset.tool));
+    });
+});
+
+canvas.addEventListener("click", event => {
+    if (mode !== "edit") return;
+
+    const rect = canvas.getBoundingClientRect();
+
+    const x = Math.floor(
+        (event.clientX - rect.left) * canvas.width / rect.width / TILE
+    );
+
+    const y = Math.floor(
+        (event.clientY - rect.top) * canvas.height / rect.height / TILE
+    );
+
+    if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return;
+
+    // Keep the bottom row as ground.
+    if (y === ROWS - 1 && selectedTool !== GROUND) {
+        statusText.textContent = "The bottom row is reserved for ground!";
+        return;
+    }
+
+    // There can only be one starting point.
+    if (selectedTool === START) {
+        for (let row = 0; row < ROWS; row++) {
+            for (let col = 0; col < COLS; col++) {
+                if (map[row][col] === START) {
+                    map[row][col] = EMPTY;
+                }
+            }
+        }
+    }
+
+    map[y][x] = selectedTool;
+    draw();
+});
+
+function setMode(newMode) {
+    mode = newMode;
+
+    if (mode === "play") {
+        resetPlayer();
+
+        // Remove any leftover enemies or coins from previous runs
+        // only when the player collects them during gameplay.
+        statusText.textContent =
+            "PLAY MODE: Arrow keys move, SPACE jumps!";
+
+        previousTime = 0;
+    } else {
+        statusText.textContent =
+            "EDITOR MODE: Select a block and click the grid!";
+    }
+
+    draw();
+}
+
+document.getElementById("playButton").onclick = () => {
+    setMode("play");
+};
+
+document.getElementById("editButton").onclick = () => {
+    setMode("edit");
+};
+
+document.getElementById("clearButton").onclick = () => {
+    if (confirm("Create a new level? Unsaved changes will be lost.")) {
+        newLevel();
+        setMode("edit");
+    }
+};
+
+document.getElementById("saveButton").onclick = () => {
+    try {
+        localStorage.setItem("marioMaker10Level", JSON.stringify(map));
+        statusText.textContent = "Level saved in your browser! 💾";
+    } catch (error) {
+        statusText.textContent = "Could not save this level.";
+    }
+};
+
+document.getElementById("loadButton").onclick = () => {
+    try {
+        const saved = localStorage.getItem("marioMaker10Level");
+
+        if (!saved) {
+            statusText.textContent = "No saved level found!";
+            return;
+        }
+
+        const loaded = JSON.parse(saved);
+
+        if (
+            !Array.isArray(loaded) ||
+            loaded.length !== ROWS ||
+            !loaded.every(row =>
+                Array.isArray(row) &&
+                row.length === COLS &&
+                row.every(tile =>
+                    Number.isInteger(tile) && tile >= 0 && tile <= 5
+                )
+            )
+        ) {
+            statusText.textContent = "That saved level is invalid.";
+            return;
+        }
+
+        map = loaded;
+        setMode("edit");
+        statusText.textContent = "Your level has been loaded! 🎉";
+    } catch (error) {
+        statusText.textContent = "Could not load your saved level.";
+    }
+};
+
+window.addEventListener("keydown", event => {
+    if (
+        ["ArrowLeft", "ArrowRight", "ArrowUp", "Space"].includes(event.code)
+    ) {
+        event.preventDefault();
+    }
+
+    keys[event.code] = true;
+
+    if (
+        mode === "play" &&
+        !gameWon &&
+        (event.code === "Space" || event.code === "ArrowUp") &&
+        player.grounded
+    ) {
+        player.vy = player.jump;
+        player.grounded = false;
+    }
+});
+
+window.addEventListener("keyup", event => {
+    keys[event.code] = false;
+});
+
+function rectHitsTile(x, y, w, h, tile) {
+    const left = Math.floor(x / TILE);
+    const right = Math.floor((x + w - 1) / TILE);
+    const top = Math.floor(y / TILE);
+    const bottom = Math.floor((y + h - 1) / TILE);
+
+    for (let ty = top; ty <= bottom; ty++) {
+        for (let tx = left; tx <= right; tx++) {
+            if (isSolid(getTile(tx, ty))) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+function updatePlayer(dt) {
+    if (mode !== "play" || gameWon) return;
+
+    const step = Math.min(dt / 16.67, 2);
+
+    player.vx = 0;
+
+    if (keys["ArrowLeft"]) player.vx = -player.speed;
+    if (keys["ArrowRight"]) player.vx = player.speed;
+
+    // Horizontal movement and collision.
+    player.x += player.vx * step;
+
+    if (rectHitsTile(
+        player.x, player.y, player.w, player.h, GROUND
+    )) {
+        player.x -= player.vx * step;
+    }
+
+    player.x = Math.max(
+        0,
+        Math.min(canvas.width - player.w, player.x)
+    );
+
+    // Gravity.
+    player.vy += 0.48 * step;
+    player.vy = Math.min(player.vy, 12);
+
+    player.grounded = false;
+
+    // Vertical movement and collision.
+    player.y += player.vy * step;
+
+    if (rectHitsTile(
+        player.x, player.y, player.w, player.h, GROUND
+    )) {
+        if (player.vy > 0) {
+            player.y =
+                Math.floor((player.y + player.h - 1) / TILE) * TILE
+                - player.h;
+            player.grounded = true;
+        } else {
+            player.y =
+                (Math.floor(player.y / TILE) + 1) * TILE;
+        }
+
+        player.vy = 0;
+    }
+
+    // Keep the player inside the level vertically.
+    if (player.y < 0) {
+        player.y = 0;
+        player.vy = 0;
+    }
+
+    // Falling off the level restarts the player.
+    if (player.y > canvas.height) {
+        resetPlayer();
+        return;
+    }
+
+    checkInteractions();
+}
+
+function checkInteractions() {
+    const left = Math.floor(player.x / TILE);
+    const right = Math.floor((player.x + player.w) / TILE);
+    const top = Math.floor(player.y / TILE);
+    const bottom = Math.floor((player.y + player.h) / TILE);
+
+    for (let y = top; y <= bottom; y++) {
+        for (let x = left; x <= right; x++) {
+            if (x < 0 || x >= COLS || y < 0 || y >= ROWS) continue;
+
+            const tile = map[y][x];
+
+            if (tile === COIN) {
+                map[y][x] = EMPTY;
+                coinsCollected++;
+                statusText.textContent =
+                    "You collected " + coinsCollected + " coin(s)! 🪙";
+            }
+
+            if (tile === ENEMY) {
+                resetPlayer();
+                statusText.textContent =
+                    "Oops! You touched an enemy. Try again!";
+                return;
+            }
+        }
+    }
+
+    // Reach the flag at the right edge to finish the level.
+    if (player.x + player.w >= canvas.width - 12) {
+        gameWon = true;
+
+        statusText.textContent =
+            "🏆 LEVEL COMPLETE! Coins collected: " + coinsCollected;
+    }
+}
+
+function drawTile(tile, x, y) {
+    const px = x * TILE;
+    const py = y * TILE;
+
+    if (tile === GROUND) {
+        ctx.fillStyle = "#39a852";
+        ctx.fillRect(px, py, TILE, TILE);
+
+        ctx.fillStyle = "#80512b";
+        ctx.fillRect(px, py + 8, TILE, TILE - 8);
+
+        ctx.fillStyle = "#5d351b";
+        ctx.fillRect(px + 3, py + 15, 10, 5);
+        ctx.fillRect(px + 18, py + 25, 10, 4);
+    }
+
+    if (tile === BRICK) {
+        ctx.fillStyle = "#d26932";
+        ctx.fillRect(px, py, TILE, TILE);
+
+        ctx.strokeStyle = "#733719";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(px + 1, py + 1, TILE - 2, TILE - 2);
+
+        ctx.beginPath();
+        ctx.moveTo(px, py + 16);
+        ctx.lineTo(px + TILE, py + 16);
+        ctx.moveTo(px + 16, py);
+        ctx.lineTo(px + 16, py + 16);
+        ctx.moveTo(px + 9, py + 16);
+        ctx.lineTo(px + 9, py + TILE);
+        ctx.stroke();
+    }
+
+    if (tile === COIN) {
+        ctx.fillStyle = "#ffdc35";
+        ctx.beginPath();
+        ctx.ellipse(
+            px + 16, py + 16, 8, 12, 0, 0, Math.PI * 2
+        );
+        ctx.fill();
+
+        ctx.strokeStyle = "#d18b00";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = "#fff2a8";
+        ctx.fillRect(px + 14, py + 9, 4, 14);
+    }
+
+    if (tile === ENEMY) {
+        ctx.fillStyle = "#8b4513";
+        ctx.beginPath();
+        ctx.arc(px + 16, py + 18, 12, Math.PI, 0);
+        ctx.lineTo(px + 28, py + 25);
+        ctx.lineTo(px + 4, py + 25);
+        ctx.fill();
+
+        ctx.fillStyle = "white";
+        ctx.fillRect(px + 9, py + 12, 5, 7);
+        ctx.fillRect(px + 19, py + 12, 5, 7);
+
+        ctx.fillStyle = "black";
+        ctx.fillRect(px + 11, py + 14, 2, 4);
+        ctx.fillRect(px + 21, py + 14, 2, 4);
+    }
+
+    if (tile === START) {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(px + 8, py + 3, 4, 28);
+
+        ctx.fillStyle = "#e63946";
+        ctx.beginPath();
+        ctx.moveTo(px + 12, py + 4);
+        ctx.lineTo(px + 29, py + 10);
+        ctx.lineTo(px + 12, py + 17);
+        ctx.closePath();
+        ctx.fill();
+    }
+}
+
+function drawPlayer() {
+    const x = player.x;
+    const y = player.y;
+
+    // Shoes
+    ctx.fillStyle = "#542b16";
+    ctx.fillRect(x + 1, y + 23, 10, 5);
+    ctx.fillRect(x + 12, y + 23, 10, 5);
+
+    // Body
+    ctx.fillStyle = "#1769d2";
+    ctx.fillRect(x + 3, y + 14, 17, 10);
+
+    // Face
+    ctx.fillStyle = "#ffcc99";
+    ctx.fillRect(x + 4, y + 7, 15, 11);
+
+    // Hat
+    ctx.fillStyle = "#e63946";
+    ctx.fillRect(x + 2, y + 2, 18, 6);
+    ctx.fillRect(x + 6, y, 12, 4);
+
+    // Eye
+    ctx.fillStyle = "#222";
+    ctx.fillRect(x + 15, y + 9, 2, 3);
+
+    // Overall buttons
+    ctx.fillStyle = "#ffdc35";
+    ctx.fillRect(x + 7, y + 16, 3, 3);
+    ctx.fillRect(x + 14, y + 16, 3, 3);
+}
+
+function draw() {
+    // Sky
+    ctx.fillStyle = "#87ceeb";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Clouds
+    ctx.fillStyle = "rgba(255,255,255,0.85)";
+
+    for (const cloud of [
+        [100, 55], [300, 90], [530, 48], [680, 110]
+    ]) {
+        ctx.beginPath();
+        ctx.arc(cloud[0], cloud[1], 15, 0, Math.PI * 2);
+        ctx.arc(cloud[0] + 18, cloud[1] - 7, 19, 0, Math.PI * 2);
+        ctx.arc(cloud[0] + 38, cloud[1], 14, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // Level tiles
+    for (let y = 0; y < ROWS; y++) {
+        for (let x = 0; x < COLS; x++) {
+            if (map[y][x] !== EMPTY) {
+                drawTile(map[y][x], x, y);
+            }
+        }
+    }
+
+    // Grid in editor mode
+    if (mode === "edit") {
+        ctx.strokeStyle = "rgba(0,0,0,0.16)";
+        ctx.lineWidth = 1;
+
+        for (let x = 0; x <= COLS; x++) {
+            ctx.beginPath();
+            ctx.moveTo(x * TILE, 0);
+            ctx.lineTo(x * TILE, canvas.height);
+            ctx.stroke();
+        }
+
+        for (let y = 0; y <= ROWS; y++) {
+            ctx.beginPath();
+            ctx.moveTo(0, y * TILE);
+            ctx.lineTo(canvas.width, y * TILE);
+            ctx.stroke();
+        }
+    }
+
+    // Finish flag
+    const flagX = canvas.width - 12;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(flagX, 225, 4, 160);
+
+    ctx.fillStyle = "#ffdc35";
+    ctx.beginPath();
+    ctx.moveTo(flagX + 4, 226);
+    ctx.lineTo(flagX - 36, 241);
+    ctx.lineTo(flagX + 4, 256);
+    ctx.fill();
+
+    // Player
+    if (mode === "play") {
+        drawPlayer();
+    }
+
+    // Win message
+    if (gameWon) {
+        ctx.fillStyle = "rgba(0,0,0,0.75)";
+        ctx.fillRect(130, 160, 510, 105);
+
+        ctx.fillStyle = "#ffdc35";
+        ctx.textAlign = "center";
+        ctx.font = "bold 30px Arial";
+        ctx.fillText("LEVEL COMPLETE!", 385, 205);
+
+        ctx.fillStyle = "white";
+        ctx.font = "18px Arial";
+        ctx.fillText(
+            "Coins: " + coinsCollected + "  |  Press Edit Level to build more!",
+            385, 238
+        );
+    }
+}
+
+function gameLoop(timestamp) {
+    if (mode === "play" && !gameWon) {
+        if (previousTime === 0) previousTime = timestamp;
+
+        const dt = Math.min(timestamp - previousTime, 33);
+        previousTime = timestamp;
+
+        updatePlayer(dt);
+    } else {
+        previousTime = timestamp;
+    }
+
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+// Start the game.
+newLevel();
+resetPlayer();
+draw();
+requestAnimationFrame(gameLoop);
+</script>
+
+</body>
+</html>

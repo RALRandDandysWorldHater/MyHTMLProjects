@@ -1,0 +1,366 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beatbox World</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #17143c, #35206b);
+    color: white;
+    text-align: center;
+}
+
+header {
+    padding: 25px;
+}
+
+h1 {
+    font-size: 42px;
+    color: #ffe45c;
+}
+
+.subtitle {
+    color: #ddd;
+}
+
+.characters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
+    gap: 18px;
+    max-width: 950px;
+    margin: 30px auto;
+    padding: 15px;
+}
+
+.character {
+    background: #28234f;
+    border: 3px solid #51478d;
+    border-radius: 18px;
+    padding: 20px 10px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.character:hover {
+    transform: translateY(-5px);
+}
+
+.character.active {
+    background: #5a42a5;
+    border-color: #ffe45c;
+    box-shadow: 0 0 18px #ffe45c;
+}
+
+.avatar {
+    font-size: 55px;
+    margin: 10px;
+}
+
+.character h3 {
+    margin: 8px 0;
+}
+
+.character p {
+    color: #ddd;
+    font-size: 12px;
+}
+
+.controls {
+    padding: 20px;
+}
+
+button {
+    background: #ffe45c;
+    color: #241c48;
+    border: none;
+    padding: 13px 25px;
+    margin: 8px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #ffb84d;
+}
+
+#status {
+    color: #ffe45c;
+    font-size: 18px;
+    margin: 20px;
+}
+
+footer {
+    padding: 30px;
+    color: #aaa;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🎵 BEATBOX WORLD 🎵</h1>
+    <p class="subtitle">Create your own music with original beatbox characters!</p>
+</header>
+
+<div class="characters">
+
+    <div class="character" data-sound="beat">
+        <div class="avatar">🥁</div>
+        <h3>Drummer</h3>
+        <p>Deep beat sounds</p>
+    </div>
+
+    <div class="character" data-sound="bass">
+        <div class="avatar">👾</div>
+        <h3>Basster</h3>
+        <p>Electronic bass</p>
+    </div>
+
+    <div class="character" data-sound="voice">
+        <div class="avatar">🤖</div>
+        <h3>Robot</h3>
+        <p>Robot voice tones</p>
+    </div>
+
+    <div class="character" data-sound="clap">
+        <div class="avatar">👏</div>
+        <h3>Clapper</h3>
+        <p>Clapping rhythm</p>
+    </div>
+
+    <div class="character" data-sound="bell">
+        <div class="avatar">🔔</div>
+        <h3>Beller</h3>
+        <p>Musical bells</p>
+    </div>
+
+    <div class="character" data-sound="synth">
+        <div class="avatar">👽</div>
+        <h3>Synthy</h3>
+        <p>Electronic melody</p>
+    </div>
+
+    <div class="character" data-sound="noise">
+        <div class="avatar">🎤</div>
+        <h3>Vocoder</h3>
+        <p>Special sound effects</p>
+    </div>
+
+</div>
+
+<div class="controls">
+    <button id="play">▶ PLAY MUSIC</button>
+    <button id="stop">⏹ STOP MUSIC</button>
+    <button id="clear">🗑 CLEAR ALL</button>
+</div>
+
+<p id="status">Select characters to create your music!</p>
+
+<footer>
+    Beatbox World | Original Music Creator
+</footer>
+
+<script>
+const characters = document.querySelectorAll(".character");
+
+const playButton = document.getElementById("play");
+const stopButton = document.getElementById("stop");
+const clearButton = document.getElementById("clear");
+const statusText = document.getElementById("status");
+
+let audio;
+let timer = null;
+let step = 0;
+
+const patterns = {
+    beat:  [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],
+    bass:  [1,0,0,1,0,0,1,0,1,0,0,1,0,0,1,0],
+    voice: [0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0],
+    clap:  [0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0],
+    bell:  [1,0,0,0,0,0,1,0,1,0,0,0,0,1,0,0],
+    synth: [1,0,1,0,0,1,0,0,1,0,1,0,0,1,0,0],
+    noise: [0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0]
+};
+
+const active = new Set();
+
+characters.forEach(character => {
+    character.addEventListener("click", () => {
+        const sound = character.dataset.sound;
+
+        if (active.has(sound)) {
+            active.delete(sound);
+            character.classList.remove("active");
+        } else {
+            active.add(sound);
+            character.classList.add("active");
+        }
+
+        statusText.textContent =
+            active.size + " character(s) selected!";
+    });
+});
+
+function tone(frequency, duration, type = "sine", volume = 0.15) {
+    const oscillator = audio.createOscillator();
+    const gain = audio.createGain();
+
+    oscillator.type = type;
+    oscillator.frequency.value = frequency;
+
+    gain.gain.setValueAtTime(volume, audio.currentTime);
+    gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        audio.currentTime + duration
+    );
+
+    oscillator.connect(gain);
+    gain.connect(audio.destination);
+
+    oscillator.start();
+    oscillator.stop(audio.currentTime + duration);
+}
+
+function drum() {
+    const oscillator = audio.createOscillator();
+    const gain = audio.createGain();
+
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(130, audio.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(
+        40, audio.currentTime + 0.15
+    );
+
+    gain.gain.setValueAtTime(0.7, audio.currentTime);
+    gain.gain.exponentialRampToValueAtTime(
+        0.001, audio.currentTime + 0.15
+    );
+
+    oscillator.connect(gain);
+    gain.connect(audio.destination);
+
+    oscillator.start();
+    oscillator.stop(audio.currentTime + 0.15);
+}
+
+function clap() {
+    const buffer = audio.createBuffer(
+        1, audio.sampleRate * 0.12, audio.sampleRate
+    );
+
+    const data = buffer.getChannelData(0);
+
+    for (let i = 0; i < data.length; i++) {
+        data[i] = Math.random() * 2 - 1;
+    }
+
+    const source = audio.createBufferSource();
+    const gain = audio.createGain();
+
+    source.buffer = buffer;
+    gain.gain.value = 0.18;
+
+    source.connect(gain);
+    gain.connect(audio.destination);
+
+    source.start();
+}
+
+function playStep() {
+    active.forEach(sound => {
+        if (!patterns[sound][step]) return;
+
+        switch(sound) {
+            case "beat":
+                drum();
+                break;
+
+            case "bass":
+                tone(65, 0.3, "sawtooth", 0.2);
+                break;
+
+            case "voice":
+                tone(240, 0.18, "square", 0.08);
+                break;
+
+            case "clap":
+                clap();
+                break;
+
+            case "bell":
+                tone(880, 0.5, "sine", 0.12);
+                break;
+
+            case "synth":
+                tone([262,330,392,440][step % 4],
+                     0.25, "triangle", 0.12);
+                break;
+
+            case "noise":
+                tone(520, 0.12, "sawtooth", 0.07);
+                break;
+        }
+    });
+
+    step = (step + 1) % 16;
+}
+
+playButton.addEventListener("click", async () => {
+    if (active.size === 0) {
+        statusText.textContent = "Select at least one character first!";
+        return;
+    }
+
+    if (!audio) {
+        audio = new (window.AudioContext ||
+                     window.webkitAudioContext)();
+    }
+
+    if (audio.state === "suspended") {
+        await audio.resume();
+    }
+
+    if (timer !== null) return;
+
+    step = 0;
+    playStep();
+
+    timer = setInterval(playStep, 250);
+
+    statusText.textContent = "🎵 Music is playing!";
+});
+
+stopButton.addEventListener("click", () => {
+    clearInterval(timer);
+    timer = null;
+    statusText.textContent = "Music stopped.";
+});
+
+clearButton.addEventListener("click", () => {
+    clearInterval(timer);
+    timer = null;
+
+    active.clear();
+
+    characters.forEach(character => {
+        character.classList.remove("active");
+    });
+
+    statusText.textContent = "All characters cleared!";
+});
+</script>
+
+</body>
+</html>

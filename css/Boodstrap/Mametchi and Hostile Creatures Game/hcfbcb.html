@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mametchi Sandbox Defense — Microsoft Edge Edition</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
+  body { background: #12141c; color: #f0f4f8; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+  
+  /* Top HUD */
+  header {
+    background: #1b1f2b; padding: 10px 18px; display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 2px solid #2e3548; box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 10;
+  }
+  .title-group h1 { font-size: 1.15rem; color: #ffd166; letter-spacing: 0.5px; }
+  .title-group p { font-size: 0.78rem; color: #94a3b8; }
+  .stats { display: flex; gap: 18px; align-items: center; font-weight: 600; font-size: 0.95rem; }
+  .stat-badge { background: #262c3d; padding: 6px 12px; border-radius: 6px; border: 1px solid #3a4259; }
+  .inf { color: #06d6a0; font-size: 1.1rem; }
+  .hp-bar-wrap { width: 140px; height: 14px; background: #33181e; border-radius: 7px; overflow: hidden; border: 1px solid #ef476f; display: inline-block; vertical-align: middle; margin-left: 6px; }
+  .hp-bar-fill { height: 100%; background: #06d6a0; width: 100%; transition: width 0.15s; }
+  .btn-action {
+    background: #3b82f6; color: white; border: none; padding: 7px 13px; border-radius: 6px;
+    font-weight: 600; cursor: pointer; font-size: 0.85rem; transition: background 0.15s;
+  }
+  .btn-action:hover { background: #2563eb; }
+  .btn-danger { background: #ef476f; }
+  .btn-danger:hover { background: #d6365c; }
+
+  /* Main Arena */
+  #game-wrap { position: relative; flex: 1; display: flex; justify-content: center; align-items: center; background: #0d0f15; }
+  canvas { background: radial-gradient(circle at 12% 50%, #1e2536 0%, #111520 75%); display: block; width: 100%; height: 100%; cursor: crosshair; }
+
+  /* Sandbox Control Dock */
+  #sandbox-dock {
+    background: #1b1f2b; border-top: 2px solid #2e3548; padding: 10px 14px;
+    display: grid; grid-template-columns: 1.35fr 1fr; gap: 14px; z-index: 10;
+  }
+  .panel { background: #141822; border: 1px solid #2a3142; border-radius: 8px; padding: 8px 10px; }
+  .panel-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.8px; color: #94a3b8; margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .btn-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  
+  .spawn-btn {
+    background: #232938; color: #e2e8f0; border: 2px solid #374151; border-radius: 6px;
+    padding: 5px 9px; font-size: 0.78rem; cursor: pointer; display: flex; align-items: center; gap: 5px;
+    transition: all 0.12s;
+  }
+  .spawn-btn:hover { background: #2f374b; transform: translateY(-1px); }
+  .spawn-btn.active { border-color: #06d6a0; background: #16332e; color: #ffffff; box-shadow: 0 0 8px rgba(6,214,160,0.35); }
+  .enemy-btn { border-color: #5c2b35; background: #2b181d; }
+  .enemy-btn:hover { background: #3d2027; border-color: #ef476f; }
+  .tag { font-size: 0.65rem; padding: 1px 4px; border-radius: 3px; background: rgba(255,255,255,0.1); color: #cbd5e1; }
+
+  /* Overlay */
+  #overlay {
+    position: absolute; inset: 0; background: rgba(10, 12, 18, 0.82);
+    display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 20;
+  }
+  #overlay h2 { font-size: 2.2rem; color: #ef476f; margin-bottom: 10px; }
+  #overlay p { color: #cbd5e1; margin-bottom: 18px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-group">
+    <h1>🛡️ Protect Mametchi: Hostile Creature Sandbox</h1>
+    <p>Click anywhere in the arena to deploy selected Hostile Defenders (Bite-Only Melee) • Unlimited Placements</p>
+  </div>
+  <div class="stats">
+    <div class="stat-badge">Points: <span class="inf">∞</span></div>
+    <div class="stat-badge">Placements: <span class="inf">∞</span></div>
+    <div class="stat-badge">
+      Mametchi HP:
+      <div class="hp-bar-wrap"><div class="hp-bar-fill" id="hp-fill"></div></div>
+    </div>
+    <button class="btn-action" id="wave-toggle">Auto-Attack Wave: ON</button>
+    <button class="btn-action" id="download-btn" title="Download this HTML file for Microsoft Edge">⬇ Download HTML</button>
+    <button class="btn-action btn-danger" id="clear-btn">Clear Arena</button>
+  </div>
+</header>
+
+<div id="game-wrap">
+  <canvas id="arena"></canvas>
+  <div id="overlay">
+    <h2>Mametchi Was Overwhelmed!</h2>
+    <p>The musical instruments and royals reached Mametchi.</p>
+    <button class="btn-action" id="restart-btn">Reset & Protect Again</button>
+  </div>
+</div>
+
+<div id="sandbox-dock">
+  <!-- Allied Hostile Creatures (Strictly Hostile Creatures, Bite-Only) -->
+  <div class="panel">
+    <div class="panel-title">
+      <span>🦷 Hostile Creature Defenders (Click to Select, Click Arena to Spawn — Cost: ∞)</span>
+      <span>Attack: BITE ONLY</span>
+    </div>
+    <div class="btn-grid" id="defender-buttons"></div>
+  </div>
+
+  <!-- Sandbox Enemy Spawner -->
+  <div class="panel">
+    <div class="panel-title">
+      <span>⚔️ Sandbox Enemy Spawner (Instant Spawn on Right)</span>
+      <span>Attackers</span>
+    </div>
+    <div class="btn-grid" id="enemy-buttons"></div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('arena');
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas() {
+  canvas.width = canvas.parentElement.clientWidth;
+  canvas.height = canvas.parentElement.clientHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// --- ENTITY DEFINITIONS ---
+// Strictly hostile creatures from Backrooms, Castle XYZ, BFDI (Fish Monster & Bugs only - no Evil Leafy/Four), Half-Life, Half-Life 2, and GMod Nextbots/Hostiles.
+const DEFENDERS = [
+  { id: 'hound',    name: 'Backrooms Hound',    src: 'Backrooms', icon: '🐕‍🦺', color: '#a16207', hp: 160, dmg: 22, speed: 2.4, biteRate: 28, radius: 18 },
+  { id: 'smiler',   name: 'Smiler',             src: 'Backrooms', icon: '😁', color: '#f8fafc', hp: 140, dmg: 28, speed: 2.8, biteRate: 24, radius: 17 },
+  { id: 'skin',     name: 'Skin-Stealer',       src: 'Backrooms', icon: '🧟', color: '#dc2626', hp: 230, dmg: 32, speed: 1.9, biteRate: 34, radius: 20 },
+  { id: 'cxyz',     name: 'Castle Void Beast',  src: 'Castle XYZ',icon: '👾', color: '#9333ea', hp: 210, dmg: 30, speed: 2.2, biteRate: 28, radius: 19 },
+  { id: 'bfdifish', name: 'BFDI Fish Monster',  src: 'BFDI',      icon: '🐟', color: '#0284c7', hp: 280, dmg: 38, speed: 1.8, biteRate: 36, radius: 23 },
+  { id: 'bfdibug',  name: 'BFDI Poison Bug',    src: 'BFDI',      icon: '🪲', color: '#65a30d', hp: 120, dmg: 20, speed: 3.1, biteRate: 20, radius: 15 },
+  { id: 'headcrab', name: 'Headcrab',           src: 'Half-Life', icon: '🦀', color: '#d97706', hp: 110, dmg: 19, speed: 3.2, biteRate: 20, radius: 15 },
+  { id: 'bullsquid',name: 'Bullsquid',          src: 'Half-Life', icon: '🦎', color: '#ca8a04', hp: 240, dmg: 34, speed: 2.0, biteRate: 32, radius: 21 },
+  { id: 'antlion',  name: 'Antlion',            src: 'HL2',       icon: '🐜', color: '#16a34a', hp: 195, dmg: 27, speed: 2.7, biteRate: 25, radius: 19 },
+  { id: 'fastzomb', name: 'Fast Zombie',        src: 'HL2',       icon: '💀', color: '#b91c1c', hp: 165, dmg: 26, speed: 3.3, biteRate: 18, radius: 18 },
+  { id: 'gmodbot',  name: 'GMod Chaser Bot',    src: 'GMod',      icon: '👹', color: '#e11d48', hp: 250, dmg: 36, speed: 3.0, biteRate: 22, radius: 20 }
+];
+
+// Attackers: Drums, Taikos, Timpanis, Violins, Kings, Female Kings
+const ENEMIES = [
+  { id: 'drum',     name: 'Snare Drum',   icon: '🥁', color: '#f97316', hp: 90,  dmg: 8,  speed: 1.45, radius: 17 },
+  { id: 'taiko',    name: 'Taiko Drum',   icon: '🪘', color: '#ea580c', hp: 190, dmg: 14, speed: 1.05, radius: 22 },
+  { id: 'timpani',  name: 'Timpani',      icon: '🛢️', color: '#d97706', hp: 240, dmg: 16, speed: 0.90, radius: 24 },
+  { id: 'violin',   name: 'Violin',       icon: '🎻', color: '#c084fc', hp: 80,  dmg: 10, speed: 1.85, radius: 16 },
+  { id: 'king',     name: 'King',         icon: '🤴', color: '#eab308', hp: 260, dmg: 18, speed: 1.15, radius: 21 },
+  { id: 'fking',    name: 'Female King',  icon: '👸', color: '#ec4899', hp: 260, dmg: 18, speed: 1.20, radius: 21 }
+];
+
+// --- GAME STATE ---
+let selectedDefender = DEFENDERS[0];
+let defenders = [];
+let enemies = [];
+let biteEffects = [];
+let autoWave = true;
+let frameCount = 0;
+let gameOver = false;
+
+const mametchi = {
+  x: 95,
+  y: canvas.height / 2,
+  radius: 34,
+  hp: 1000,
+  maxHp: 1000
+};
+
+// --- UI BUTTON GENERATION ---
+const defContainer = document.getElementById('defender-buttons');
+DEFENDERS.forEach((def, idx) => {
+  const btn = document.createElement('button');
+  btn.className = 'spawn-btn' + (idx === 0 ? ' active' : '');
+  btn.innerHTML = `<span>${def.icon}</span> <strong>${def.name}</strong> <span class="tag">${def.src}</span>`;
+  btn.onclick = () => {
+    document.querySelectorAll('#defender-buttons .spawn-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedDefender = def;
+  };
+  defContainer.appendChild(btn);
+});
+
+const enemyContainer = document.getElementById('enemy-buttons');
+ENEMIES.forEach(en => {
+  const btn = document.createElement('button');
+  btn.className = 'spawn-btn enemy-btn';
+  btn.innerHTML = `<span>${en.icon}</span> <strong>+ ${en.name}</strong>`;
+  btn.onclick = () => spawnEnemy(en);
+  enemyContainer.appendChild(btn);
+});
+
+// --- SPAWN FUNCTIONS (INFINITY POINTS & INFINITY PLACEMENT) ---
+function spawnDefender(x, y) {
+  if (gameOver) return;
+  defenders.push({
+    ...selectedDefender,
+    x: Math.max(150, Math.min(canvas.width - 40, x)),
+    y: Math.max(30, Math.min(canvas.height - 30, y)),
+    currentHp: selectedDefender.hp,
+    cooldown: 0,
+    biteAnim: 0
+  });
+}
+
+function spawnEnemy(type) {
+  if (gameOver) return;
+  const margin = 45;

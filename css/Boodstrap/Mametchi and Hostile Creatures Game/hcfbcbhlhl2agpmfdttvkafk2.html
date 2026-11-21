@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Protect Mametchi: Hostile Creature Sandbox</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body {
+      background: #10121a;
+      color: #eef1f8;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      user-select: none;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #191d2b;
+      padding: 8px 16px;
+      border-bottom: 2px solid #2b3147;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .title-area { display: flex; align-items: center; gap: 10px; }
+    .title-area h1 { font-size: 16px; color: #ffd166; letter-spacing: 0.3px; }
+    .stats { display: flex; gap: 10px; font-weight: bold; font-size: 13px; flex-wrap: wrap; }
+    .stat-badge { background: #23283b; padding: 5px 10px; border-radius: 6px; border: 1px solid #363e59; }
+    .infinity { color: #ffd166; font-size: 15px; }
+    .top-controls { display: flex; gap: 6px; flex-wrap: wrap; }
+    button {
+      background: #3a86ff;
+      color: #fff;
+      border: none;
+      padding: 6px 11px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 12px;
+      cursor: pointer;
+      transition: 0.12s;
+    }
+    button:hover { filter: brightness(1.12); }
+    button.toggle-on { background: #06d6a0; color: #0e1a1d; }
+    button.toggle-off { background: #4a526e; color: #d8deed; }
+    button.warn { background: #f77f00; color: #fff; }
+    button.danger { background: #ef476f; color: #fff; }
+
+    .workspace {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Left GMod-Style Sandbox Spawnmenu */
+    .spawnmenu {
+      width: 370px;
+      min-width: 330px;
+      background: #171a26;
+      border-right: 2px solid #2b3147;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      gap: 8px;
+    }
+    .spawnmenu-title {
+      font-size: 13px;
+      font-weight: bold;
+      color: #06d6a0;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .mode-bar {
+      display: flex;
+      gap: 5px;
+      background: #212638;
+      padding: 5px;
+      border-radius: 7px;
+      border: 1px solid #323952;
+    }
+    .mode-btn {
+      flex: 1;
+      padding: 5px 6px;
+      font-size: 11px;
+      background: #2c334a;
+      color: #b8c1d9;
+      border-radius: 5px;
+    }
+    .mode-btn.active {
+      background: #ffd166;
+      color: #12141d;
+    }
+    .search-box {
+      width: 100%;
+      background: #212638;
+      border: 1px solid #363e59;
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      outline: none;
+    }
+    .search-box:focus { border-color: #3a86ff; }
+    .tabs {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .tab {
+      background: #23283b;
+      color: #b8c0d9;
+      padding: 4px 8px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: bold;
+      border: 1px solid #353d57;
+    }
+    .tab.active { background: #3a86ff; color: #fff; border-color: #3a86ff; }
+
+    .spawn-grid {
+      flex: 1;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 7px;
+      padding-right: 3px;
+      align-content: start;
+    }
+    .spawn-tile {
+      background: #22273a;
+      border: 2px solid #323954;
+      border-radius: 8px;
+      padding: 7px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: 0.1s;
+    }
+    .spawn-tile:hover { border-color: #6f82bd; background: #282e45; }
+    .spawn-tile.selected { border-color: #06d6a0; background: #1c3136; }
+    .tile-top { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+    .tile-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 6px;
+      background: #141722;
+      border: 1px solid #3b4463;
+      flex-shrink: 0;
+    }
+    .tile-name { font-size: 12px; font-weight: bold; color: #fff; line-height: 1.2; }
+    .tile-cat { font-size: 10px; color: #8fa0c7; }
+    .tile-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      color: #ffd166;
+      border-top: 1px solid #313852;
+      padding-top: 4px;
+    }
+
+    /* Right Battlefield + Enemy Sandbox Bar */
+    .battle-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #0d0f17;
+      overflow: hidden;
+    }
+    .enemy-sandbox-bar {
+      background: #191d2b;
+      border-bottom: 1px solid #2b3147;
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .enemy-sandbox-bar span {
+      font-size: 11px;
+      font-weight: bold;
+      color: #ff758f;
+      margin-right: 4px;
+    }
+    .enemy-btn {
+      background: #2b2133;
+      border: 1px solid #593652;
+      color: #ffd6e0;
+      padding: 4px 9px;
+      font-size: 11px;
+      border-radius: 5px;
+    }
+    .enemy-btn:hover { background: #4a2a47; }
+
+    .canvas-wrap {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #131620;
+      padding: 10px;
+    }
+    canvas#gameCanvas {
+      width: 100%;
+      height: 100%;
+      max-height: 100%;
+      border: 2px solid #2e354f;
+      border-radius: 8px;
+      background: #555966;
+      cursor: crosshair;
+      display: block;
+    }
+    .hint-overlay {
+      position: absolute;
+      bottom: 18px;
+      right: 22px;
+      background: rgba(16, 18, 26, 0.85);
+      color: #e2e8f8;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      pointer-events: none;
+      border: 1px solid #353e5c;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="title-area">
+    <h1>PROTECT MAMETCHI: HOSTILE CREATURE SANDBOX</h1>
+  </div>
+  <div class="stats">
+    <div class="stat-badge">Points: <span class="infinity">∞</span></div>
+    <div class="stat-badge">Creature Cap: <span class="infinity">∞</span></div>
+    <div class="stat-badge">Attack: <span style="color:#ff6b6b;">BITE ONLY</span></div>
+    <div class="stat-badge">Mametchi HP: <span id="hp-display" style="color:#06d6a0;">1000 / 1000</span></div>
+    <div class="stat-badge">Wave: <span id="wave-display">1</span></div>
+    <div class="stat-badge">Allies: <span id="ally-count">0</span> | Enemies: <span id="enemy-count">0</span></div>
+  </div>
+  <div class="top-controls">
+    <button id="wave-toggle-btn" class="toggle-on">Auto-Waves: ON</button>
+    <button id="pause-btn" class="toggle-off">Pause</button>
+    <button id="heal-btn">Heal Mametchi</button>
+    <button id="clear-enemies-btn" class="warn">Clear Enemies</button>
+    <button id="clear-allies-btn" class="danger">Clear Creatures</button>
+    <button id="restart-btn">Restart</button>
+  </div>
+</header>
+
+<div class="workspace">
+  <!-- Left Sandbox Spawnmenu -->
+  <aside class="spawnmenu">
+    <div class="spawnmenu-title">
+      <span>Hostile Creature Spawnmenu</span>
+      <span style="color:#ffd166; font-size:11px;">COST: 0 (∞)</span>
+    </div>
+
+    <div class="mode-bar">
+      <button class="mode-btn active" id="mode-spawn1" title="Clicking a tile spawns 1 creature immediately">Button: Spawn 1</button>
+      <button class="mode-btn" id="mode-spawn5" title="Clicking a tile spawns 5 creatures immediately">Button: Spawn 5</button>
+      <button class="mode-btn" id="mode-brush" title="Select a creature, then click or drag on the field">Field Brush</button>
+    </div>
+
+    <input type="text" id="search-input" class="search-box" placeholder="Search hostile creatures (e.g. Bug, Headcrab, Bacteria)..." />
+    <div class="tabs" id="category-tabs"></div>
+    <div class="spawn-grid" id="spawn-grid"></div>
+  </aside>
+
+  <!-- Right Battlefield -->
+  <main class="battle-area">
+    <div class="enemy-sandbox-bar">
+      <span>SANDBOX ENEMY SPAWNER:</span>
+      <button class="enemy-btn" data-enemy="drum">+ Drum</button>
+      <button class="enemy-btn" data-enemy="taiko">+ Taiko</button>
+      <button class="enemy-btn" data-enemy="timpani">+ Timpani</button>
+      <button class="enemy-btn" data-enemy="violin">+ Violin</button>
+      <button class="enemy-btn" data-enemy="king">+ King</button>
+      <button class="enemy-btn" data-enemy="fking">+ Female King</button>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="gameCanvas" width="1000" height="600"></canvas>
+      <div class="hint-overlay" id="hint-text">Selected: Castle XYZ Rat • Clicking tile spawns 1 • Click anywhere on field to place</div>
+    </div>
+  </main>
+</div>
+
+<script>
+const CREATURES = [
+  // Castle XYZ
+  { id: 'rat', name: 'Castle XYZ Rat', cat: 'Castle XYZ', bite: 23, hp: 145, speed: 1.9, size: 17, shape: 'rat', color: '#4b5563', accent: '#f472b6' },
+  { id: 'mouse', name: 'Castle XYZ Mouse', cat: 'Castle XYZ', bite: 19, hp: 115, speed: 2.3, size: 14, shape: 'rat', color: '#9ca3af', accent: '#fbcfe8' },
+  { id: 'giant_rat', name: 'Giant Castle XYZ Rat', cat: 'Castle XYZ', bite: 40, hp: 270, speed: 1.5, size: 24, shape: 'rat', color: '#1f2937', accent: '#ef4444' },
+
+  // BFDI (No Evil Leafy - Original Shapes!)
+  { id: 'poison_bug', name: 'BFDI Poison Bug', cat: 'BFDI', bite: 18, hp: 95, speed: 2.1, size: 16, shape: 'bfdi_bug', color: '#6b21a8', accent: '#d8b4fe' },
+  { id: 'queen_bug', name: 'BFDI Queen Bug', cat: 'BFDI', bite: 44, hp: 330, speed: 1.4, size: 25, shape: 'bfdi_queen_bug', color: '#581c87', accent: '#facc15' },

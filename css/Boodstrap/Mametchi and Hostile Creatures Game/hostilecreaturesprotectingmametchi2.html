@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Protect Mametchi: Hostile Creature Defense</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body {
+      background: #12141d;
+      color: #f0f2f8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 12px;
+      user-select: none;
+    }
+    header {
+      width: 100%;
+      max-width: 1120px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #1c2030;
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: 1px solid #2e344d;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .stats { display: flex; gap: 12px; font-weight: bold; font-size: 14px; flex-wrap: wrap; }
+    .stat-badge { background: #262b40; padding: 6px 12px; border-radius: 6px; border: 1px solid #38405e; }
+    .infinity { color: #ffd166; font-size: 16px; }
+    .controls { display: flex; gap: 8px; }
+    button {
+      background: #3a86ff;
+      color: white;
+      border: none;
+      padding: 7px 13px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    button:hover { background: #2667d4; }
+    button.danger { background: #ef476f; }
+    button.danger:hover { background: #c93256; }
+    #game-container {
+      position: relative;
+      width: 100%;
+      max-width: 1120px;
+      border: 2px solid #2e344d;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #87ceeb;
+    }
+    canvas { display: block; width: 100%; height: 430px; cursor: crosshair; }
+    .roster-panel {
+      width: 100%;
+      max-width: 1120px;
+      background: #1c2030;
+      border: 1px solid #2e344d;
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tab {
+      background: #262b40;
+      color: #b8c0d9;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: bold;
+      border: 1px solid #38405e;
+    }
+    .tab.active { background: #ffd166; color: #12141d; border-color: #ffd166; }
+    .helper-text { font-size: 12px; color: #9aa5c4; }
+    .unit-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
+      gap: 8px;
+      max-height: 220px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .unit-card {
+      background: #252a3d;
+      border: 2px solid #353c57;
+      border-radius: 8px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .unit-card.selected { border-color: #06d6a0; background: #1f3338; }
+    .unit-name { font-weight: bold; font-size: 13px; color: #fff; }
+    .unit-meta { font-size: 11px; color: #9aa5c4; }
+    .summon-actions {
+      display: flex;
+      gap: 5px;
+      margin-top: 2px;
+    }
+    .btn-summon {
+      flex: 1;
+      background: #06d6a0;
+      color: #0d1b1e;
+      padding: 5px 8px;
+      font-size: 12px;
+      border-radius: 5px;
+    }
+    .btn-summon:hover { background: #05b889; }
+    .btn-summon-5 {
+      background: #ffd166;
+      color: #12141d;
+      padding: 5px 8px;
+      font-size: 12px;
+      border-radius: 5px;
+    }
+    .btn-summon-5:hover { background: #eab844; }
+    .btn-select {
+      background: #3a86ff;
+      color: #fff;
+      padding: 5px 8px;
+      font-size: 11px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="stats">
+    <div class="stat-badge">Points: <span class="infinity">∞ (Infinity)</span></div>
+    <div class="stat-badge">Summon Limit: <span class="infinity">∞ (Unlimited)</span></div>
+    <div class="stat-badge">Attack Mode: <span style="color:#ff6b6b;">BITE ONLY</span></div>
+    <div class="stat-badge">Mametchi HP: <span id="hp-display" style="color:#06d6a0;">1000 / 1000</span></div>
+    <div class="stat-badge">Wave: <span id="wave-display">1</span></div>
+    <div class="stat-badge">Active Creatures: <span id="count-display">0</span></div>
+  </div>
+  <div class="controls">
+    <button class="danger" id="clear-btn">Clear All Creatures</button>
+    <button id="restart-btn">Restart Game</button>
+  </div>
+</header>
+
+<div id="game-container">
+  <canvas id="gameCanvas" width="1120" height="430"></canvas>
+</div>
+
+<div class="roster-panel">
+  <div class="panel-header">
+    <div class="tabs" id="category-tabs"></div>
+    <div class="helper-text">Click <b>Summon</b> or <b>+5</b> on any creature button below, or click <b>Aim</b> and click anywhere on the field.</div>
+  </div>
+  <div class="unit-grid" id="unit-grid"></div>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// Complete Hostile Creature Roster (Excludes Evil Leafy, Four, and normal BFDI contestants)
+const CREATURES = [
+  // Castle XYZ (Black, red-eyed, mouse-like shadow beast with long tail & round ears)
+  { id: 'cxyz_shadow_rat', name: 'Castle XYZ Shadow Beast', cat: 'Castle XYZ', hp: 140, dmg: 22, speed: 2.3, range: 34, cooldown: 28, color: '#080808', size: 22, style: 'cxyz' },
+  { id: 'cxyz_alpha_rat', name: 'Castle XYZ Elder Beast', cat: 'Castle XYZ', hp: 260, dmg: 38, speed: 1.9, range: 38, cooldown: 32, color: '#000000', size: 28, style: 'cxyz' },
+
+  // BFDI Hostile Creatures (Strict actual monsters/creatures only)
+  { id: 'bfdi_bug', name: 'BFDI Poison Bug', cat: 'BFDI', hp: 90, dmg: 18, speed: 2.8, range: 30, cooldown: 22, color: '#6a4c93', size: 17, style: 'bug' },
+  { id: 'bfdi_queen_bug', name: 'BFDI Queen Bug', cat: 'BFDI', hp: 320, dmg: 42, speed: 1.6, range: 42, cooldown: 35, color: '#4a154b', size: 30, style: 'bug' },
+  { id: 'bfdi_ice_bug', name: 'BFDI Ice Bug', cat: 'BFDI', hp: 110, dmg: 20, speed: 2.6, range: 30, cooldown: 24, color: '#4cc9f0', size: 18, style: 'bug' },
+  { id: 'bfdi_fish_monster', name: 'BFDI Fish Monster', cat: 'BFDI', hp: 280, dmg: 45, speed: 1.8, range: 44, cooldown: 34, color: '#2b9348', size: 29, style: 'fish' },
+  { id: 'bfdi_chompy', name: 'Chompy', cat: 'BFDI', hp: 180, dmg: 34, speed: 2.2, range: 36, cooldown: 26, color: '#e63946', size: 22, style: 'beast' },
+  { id: 'bfdi_fire_monster', name: 'BFDI Fire Monster', cat: 'BFDI', hp: 240, dmg: 40, speed: 2.0, range: 40, cooldown: 30, color: '#f77f00', size: 27, style: 'beast' },
+  { id: 'bfdi_dragon', name: 'BFDI Dragon', cat: 'BFDI', hp: 420, dmg: 58, speed: 1.7, range: 48, cooldown: 38, color: '#d62828', size: 34, style: 'dragon' },
+  { id: 'bfdi_davidworm', name: 'Davidworm', cat: 'BFDI', hp: 210, dmg: 30, speed: 2.1, range: 38, cooldown: 28, color: '#f4a261', size: 24, style: 'worm' },
+  { id: 'bfdi_planty', name: 'Planty', cat: 'BFDI', hp: 190, dmg: 32, speed: 1.5, range: 38, cooldown: 28, color: '#38b000', size: 23, style: 'plant' },
+  { id: 'bfdi_fourse', name: 'Fourse', cat: 'BFDI', hp: 230, dmg: 35, speed: 2.7, range: 38, cooldown: 26, color: '#277da1', size: 25, style: 'beast' },
+  { id: 'bfdi_jingjing', name: 'JingJing', cat: 'BFDI', hp: 170, dmg: 28, speed: 2.4, range: 35, cooldown: 25, color: '#9b5de5', size: 21, style: 'beast' },
+  { id: 'bfdia_5b_enemy', name: 'BFDIA 5b Spike Walker', cat: 'BFDI', hp: 150, dmg: 26, speed: 2.3, range: 33, cooldown: 24, color: '#3d405b', size: 20, style: 'bug' },
+
+  // Backrooms Hostile Entities
+  { id: 'br_hound', name: 'Backrooms Hound', cat: 'Backrooms', hp: 160, dmg: 28, speed: 3.0, range: 35, cooldown: 22, color: '#4a3b32', size: 22, style: 'beast' },
+  { id: 'br_smiler', name: 'Smiler', cat: 'Backrooms', hp: 190, dmg: 35, speed: 2.7, range: 36, cooldown: 25, color: '#111111', size: 24, style: 'smiler' },
+  { id: 'br_skin_stealer', name: 'Skin-Stealer', cat: 'Backrooms', hp: 260, dmg: 38, speed: 2.0, range: 38, cooldown: 30, color: '#c99e87', size: 26, style: 'humanoid' },
+  { id: 'br_bacteria', name: 'Bacteria Entity', cat: 'Backrooms', hp: 240, dmg: 40, speed: 2.8, range: 40, cooldown: 26, color: '#1b1b1b', size: 28, style: 'wire' },
+  { id: 'br_partygoer', name: 'Partygoer', cat: 'Backrooms', hp: 200, dmg: 32, speed: 2.2, range: 36, cooldown: 28, color: '#e9c46a', size: 24, style: 'humanoid' },
+  { id: 'br_deathmoth', name: 'Male Deathmoth', cat: 'Backrooms', hp: 130, dmg: 24, speed: 3.2, range: 32, cooldown: 20, color: '#7f5539', size: 20, style: 'bug' },
+  { id: 'br_wretch', name: 'Wretch', cat: 'Backrooms', hp: 175, dmg: 30, speed: 2.5, range: 35, cooldown: 24, color: '#8d5b4c', size: 22, style: 'humanoid' },
+  { id: 'br_clump', name: 'The Clump', cat: 'Backrooms', hp: 310, dmg: 44, speed: 1.6, range: 42, cooldown: 34, color: '#5c4742', size: 30, style: 'beast' },
+
+  // Half-Life Hostile Creatures
+  { id: 'hl_headcrab', name: 'Headcrab', cat: 'Half-Life', hp: 95, dmg: 20, speed: 3.1, range: 30, cooldown: 20, color: '#d4a373', size: 17, style: 'crab' },
+  { id: 'hl_bullsquid', name: 'Bullsquid', cat: 'Half-Life', hp: 250, dmg: 38, speed: 2.1, range: 40, cooldown: 30, color: '#8ab17d', size: 26, style: 'beast' },
+  { id: 'hl_houndeye', name: 'Houndeye', cat: 'Half-Life', hp: 150, dmg: 26, speed: 2.6, range: 34, cooldown: 24, color: '#e9d8a6', size: 21, style: 'beast' },
+  { id: 'hl_barnacle', name: 'Barnacle Maw', cat: 'Half-Life', hp: 220, dmg: 42, speed: 1.1, range: 38, cooldown: 32, color: '#9e2a2b', size: 24, style: 'plant' },
+  { id: 'hl_ichthyosaur', name: 'Ichthyosaur', cat: 'Half-Life', hp: 340, dmg: 52, speed: 2.3, range: 46, cooldown: 34, color: '#3d5a80', size: 32, style: 'fish' },

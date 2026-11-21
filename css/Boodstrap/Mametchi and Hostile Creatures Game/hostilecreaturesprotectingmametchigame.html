@@ -1,0 +1,574 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mametchi 3D Defense</title>
+<style>
+body {
+  margin: 0;
+  background: #17152e;
+  color: white;
+  font-family: Arial;
+  text-align: center;
+}
+h1 { color: gold; }
+#game {
+  width: 100%;
+  height: 480px;
+  display: block;
+}
+.panel {
+  background: #29264b;
+  padding: 12px;
+  margin: 10px auto;
+  max-width: 900px;
+  border-radius: 12px;
+}
+button {
+  background: gold;
+  border: none;
+  padding: 11px;
+  margin: 4px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+button:hover { background: orange; }
+#message { color: #aaffbb; }
+</style>
+</head>
+<body>
+
+<h1>🛡️ Mametchi 3D Defense</h1>
+<p>Protect Mametchi with your biting hostile creatures!</p>
+
+<div class="panel">
+❤️ HP: <span id="hp">100</span>
+⭐ Points: <span id="points">100</span>
+🌊 Wave: <span id="wave">1</span>
+</div>
+
+<div id="game"></div>
+
+<div class="panel">
+<h3>Recruit 3D Protectors</h3>
+<button onclick="recruit('Dark Mouse')">🐭 Dark Mouse (10)</button>
+<button onclick="recruit('Shadow Rat')">🐀 Shadow Rat (15)</button>
+<button onclick="recruit('Shadow Creature')">👾 Shadow Creature (20)</button>
+<button onclick="recruit('Gear Golem')">🤖 Gear Golem (25)</button>
+<button onclick="recruit('Flying Creature')">🦇 Flying Creature (30)</button>
+</div>
+
+<div class="panel">
+<button id="start" onclick="startWave()">Start Wave</button>
+<button onclick="restart()">Restart Game</button>
+<h3 id="message">Prepare your army!</h3>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from "three";
+
+// SCENE
+const container = document.getElementById("game");
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x8fc5ed);
+
+scene.fog = new THREE.Fog(0x8fc5ed, 18, 38);
+
+const camera = new THREE.PerspectiveCamera(
+  55,
+  container.clientWidth / 480,
+  0.1,
+  100
+);
+
+camera.position.set(8, 11, 15);
+camera.lookAt(0, 0, 0);
+
+const renderer = new THREE.WebGLRenderer({
+  antialias: true
+});
+
+renderer.setSize(container.clientWidth, 480);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+container.appendChild(renderer.domElement);
+
+// LIGHTING
+scene.add(new THREE.HemisphereLight(0xffffff, 0x526078, 2));
+
+const sunlight = new THREE.DirectionalLight(0xffffff, 2);
+sunlight.position.set(5, 12, 8);
+scene.add(sunlight);
+
+// MATERIALS
+function material(color) {
+  return new THREE.MeshStandardMaterial({
+    color: color,
+    roughness: 0.75
+  });
+}
+
+const yellow = material(0xffdd37);
+const black = material(0x292333);
+const grey = material(0x888899);
+const blue = material(0x4888dd);
+const red = material(0xdd4444);
+const purple = material(0x8038bb);
+const gold = material(0xffbb22);
+const white = material(0xffffff);
+
+// OBJECT HELPERS
+function sphere(parent, x, y, z, size, mat) {
+  const mesh = new THREE.Mesh(
+    new THREE.SphereGeometry(size, 20, 16),
+    mat
+  );
+  mesh.position.set(x, y, z);
+  parent.add(mesh);
+  return mesh;
+}
+
+function box(parent, x, y, z, sx, sy, sz, mat) {
+  const mesh = new THREE.Mesh(
+    new THREE.BoxGeometry(sx, sy, sz),
+    mat
+  );
+  mesh.position.set(x, y, z);
+  parent.add(mesh);
+  return mesh;
+}
+
+function cylinder(parent, x, y, z, r1, r2, h, mat) {
+  const mesh = new THREE.Mesh(
+    new THREE.CylinderGeometry(r1, r2, h, 24),
+    mat
+  );
+  mesh.position.set(x, y, z);
+  parent.add(mesh);
+  return mesh;
+}
+
+// 3D MAMETCHI
+function createMametchi() {
+  const group = new THREE.Group();
+
+  sphere(group, 0, 0.9, 0, 0.75, yellow);
+
+  sphere(group, -0.48, 1.55, 0, 0.23, yellow);
+  sphere(group, 0.48, 1.55, 0, 0.23, yellow);
+
+  sphere(group, -0.25, 1.02, 0.63, 0.09, black);
+  sphere(group, 0.25, 1.02, 0.63, 0.09, black);
+
+  sphere(group, 0, 0.78, 0.69, 0.12, red);
+
+  sphere(group, -0.3, 0.2, 0, 0.18, yellow);
+  sphere(group, 0.3, 0.2, 0, 0.18, yellow);
+
+  group.position.set(-5, 0, 0);
+  scene.add(group);
+
+  return group;
+}
+
+const mametchi = createMametchi();
+
+// 3D DEFENDER MODELS
+function createCreature(name) {
+  const group = new THREE.Group();
+
+  let bodyMat = grey;
+  let earMat = black;
+
+  if (name === "Dark Mouse") {
+    bodyMat = black;
+  }
+
+  if (name === "Shadow Rat") {
+    bodyMat = grey;
+    earMat = purple;
+  }
+
+  if (name === "Shadow Creature") {
+    bodyMat = purple;
+  }
+
+  if (name === "Gear Golem") {
+    bodyMat = blue;
+  }
+
+  if (name === "Flying Creature") {
+    bodyMat = purple;
+  }
+
+  sphere(group, 0, 0.65, 0, 0.48, bodyMat);
+
+  sphere(group, -0.3, 1.12, 0, 0.22, earMat);
+  sphere(group, 0.3, 1.12, 0, 0.22, earMat);
+
+  sphere(group, -0.16, 0.78, 0.4, 0.07, white);
+  sphere(group, 0.16, 0.78, 0.4, 0.07, white);
+
+  sphere(group, 0, 0.58, 0.47, 0.09, black);
+
+  if (name === "Gear Golem") {
+    box(group, 0, 0.65, -0.35, 0.7, 0.7, 0.3, gold);
+  }
+
+  if (name === "Flying Creature") {
+    box(group, -0.6, 0.7, 0, 0.5, 0.12, 0.5, purple);
+    box(group, 0.6, 0.7, 0, 0.5, 0.12, 0.5, purple);
+  }
+
+  return group;
+}
+
+// 3D ENEMY MODELS
+function createEnemy(name) {
+  const group = new THREE.Group();
+
+  if (name === "Drum") {
+    cylinder(group, 0, 0.65, 0, 0.55, 0.55, 1, red);
+    cylinder(group, 0, 1.17, 0, 0.56, 0.56, 0.08, white);
+  }
+
+  else if (name === "Taiko") {
+    cylinder(group, 0, 0.65, 0, 0.65, 0.65, 1.1, gold);
+    cylinder(group, 0, 1.22, 0, 0.65, 0.65, 0.08, white);
+  }
+
+  else if (name === "Timpani") {
+    sphere(group, 0, 0.8, 0, 0.7, gold);
+    cylinder(group, 0, 1.25, 0, 0.6, 0.6, 0.08, white);
+  }
+
+  else if (name === "Violin") {
+    sphere(group, 0, 0.65, 0, 0.55, red);
+    box(group, 0, 1.25, 0, 0.16, 0.9, 0.16, black);
+  }
+
+  else if (name === "King" || name === "Female King") {
+    const kingMat = name === "King" ? blue : purple;
+
+    sphere(group, 0, 0.8, 0, 0.65, kingMat);
+
+    cylinder(group, 0, 1.65, 0, 0.35, 0.35, 0.3, gold);
+
+    for (let i = -1; i <= 1; i++) {
+      sphere(group, i * 0.28, 1.88, 0, 0.15, gold);
+    }
+  }
+
+  return group;
+}
+
+// BATTLEFIELD
+const ground = new THREE.Mesh(
+  new THREE.BoxGeometry(24, 0.3, 12),
+  material(0x47834b)
+);
+ground.position.y = -0.2;
+scene.add(ground);
+
+// LANE MARKINGS
+for (let z of [-3, 0, 3]) {
+  const line = new THREE.Mesh(
+    new THREE.BoxGeometry(24, 0.04, 0.06),
+    material(0xbedb87)
+  );
+  line.position.set(0, 0.01, z);
+  scene.add(line);
+}
+
+// GAME DATA
+const data = {
+  "Dark Mouse": {cost:10, damage:15, speed:5, cooldown:0.6},
+  "Shadow Rat": {cost:15, damage:25, speed:4, cooldown:0.9},
+  "Shadow Creature": {cost:20, damage:30, speed:4, cooldown:1},
+  "Gear Golem": {cost:25, damage:45, speed:3, cooldown:1.3},
+  "Flying Creature": {cost:30, damage:35, speed:6, cooldown:0.8}
+};
+
+const enemyNames = [
+  "Drum", "Taiko", "Timpani",
+  "Violin", "King", "Female King"
+];
+
+const laneZ = [-3, 0, 3];
+
+let defenders = [];
+let enemies = [];
+let hp = 100;
+let points = 100;
+let wave = 1;
+let running = false;
+let gameOver = false;
+let spawned = 0;
+let spawnTimer = 0;
+let lastTime = 0;
+
+// RECRUIT
+window.recruit = function(name) {
+  if (gameOver) return;
+
+  const d = data[name];
+
+  if (points < d.cost) {
+    message("Not enough points!");
+    return;
+  }
+
+  points -= d.cost;
+
+  const lane = defenders.length % 3;
+
+  const model = createCreature(name);
+  model.position.set(-3.8, 0, laneZ[lane]);
+
+  scene.add(model);
+
+  defenders.push({
+    name,
+    model,
+    lane,
+    homeX: -3.8,
+    damage: d.damage,
+    speed: d.speed,
+    cooldown: 0,
+    cooldownTime: d.cooldown,
+    biting: 0,
+    target: null
+  });
+
+  updateUI();
+  message(name + " joined the army!");
+};
+
+// SPAWN ENEMIES
+function spawnEnemy() {
+  const boss = wave % 5 === 0 && spawned === 0;
+
+  const name = boss
+    ? "Female King"
+    : enemyNames[Math.floor(Math.random()*enemyNames.length)];
+
+  const model = createEnemy(name);
+
+  const lane = Math.floor(Math.random()*3);
+  model.position.set(10, 0, laneZ[lane]);
+
+  scene.add(model);
+
+  let baseHP = {
+    Drum:40, Taiko:60, Timpani:80,
+    Violin:45, King:120, "Female King":350
+  }[name];
+
+  const enemy = {
+    name,
+    model,
+    lane,
+    hp:baseHP + wave * 5,
+    maxHP:baseHP + wave * 5,
+    speed: boss ? 0.45 : 0.7 + Math.random()*0.4,
+    boss
+  };
+
+  enemies.push(enemy);
+  spawned++;
+}
+
+// WAVE
+window.startWave = function() {
+  if (running || gameOver) return;
+
+  running = true;
+  spawned = 0;
+  spawnTimer = 0;
+  message("Wave " + wave + " incoming!");
+  updateUI();
+};
+
+// UPDATE GAME
+function update(dt) {
+  if (!running || gameOver) return;
+
+  const total = wave % 5 === 0 ? 1 : wave + 3;
+
+  spawnTimer += dt;
+
+  if (spawned < total && spawnTimer > 1.7) {
+    spawnEnemy();
+    spawnTimer = 0;
+  }
+
+  // Enemy movement
+  enemies.forEach(e => {
+    e.model.position.x -= e.speed * dt;
+
+    if (e.model.position.x < -5.8) {
+      hp -= e.boss ? 30 : 10;
+      e.hp = 0;
+      message(e.name + " reached Mametchi!");
+    }
+  });
+
+  // Creature movement and biting
+  defenders.forEach(d => {
+    d.cooldown -= dt;
+    d.biting = Math.max(0, d.biting - dt);
+
+    const target = enemies
+      .filter(e => e.hp > 0 &&
+        e.lane === d.lane &&
+        e.model.position.x > -5.8 &&
+        e.model.position.x > d.model.position.x &&
+        e.model.position.x - d.model.position.x < 7)
+      .sort((a,b) =>
+        a.model.position.x - b.model.position.x
+      )[0];
+
+    d.target = target || null;
+
+    if (target) {
+      const destination = target.model.position.x - 1.2;
+      const distance = destination - d.model.position.x;
+
+      if (Math.abs(distance) > 0.7) {
+        d.model.position.x +=
+          Math.sign(distance) *
+          Math.min(Math.abs(distance), d.speed * dt);
+      }
+
+      if (Math.abs(distance) <= 0.7 && d.cooldown <= 0) {
+        target.hp -= d.damage;
+        d.cooldown = d.cooldownTime;
+        d.biting = 0.3;
+
+        // Bite animation.
+        d.model.scale.set(1.2, 0.8, 1.2);
+
+        message(d.name + " BITES " + target.name + "!");
+      }
+    } else {
+      const distance = d.homeX - d.model.position.x;
+
+      if (Math.abs(distance) > 0.1) {
+        d.model.position.x +=
+          Math.sign(distance) *
+          Math.min(Math.abs(distance), d.speed * dt);
+      }
+    }
+
+    // Restore creature size after bite.
+    if (d.biting <= 0) {
+      d.model.scale.set(1, 1, 1);
+    }
+  });
+
+  // Remove defeated enemies.
+  enemies = enemies.filter(e => {
+    if (e.hp <= 0) {
+      points += e.boss ? 100 : 10;
+      scene.remove(e.model);
+      return false;
+    }
+    return true;
+  });
+
+  if (hp <= 0) {
+    hp = 0;
+    running = false;
+    gameOver = true;
+    message("GAME OVER!");
+  }
+
+  if (spawned >= total && enemies.length === 0 && running) {
+    running = false;
+    points += 30;
+    wave++;
+    message("Wave cleared! +30 points!");
+  }
+
+  updateUI();
+}
+
+// HUD
+function updateUI() {
+  document.getElementById("hp").textContent = hp;
+  document.getElementById("points").textContent = points;
+  document.getElementById("wave").textContent = wave;
+  document.getElementById("start").disabled = running || gameOver;
+}
+
+function message(text) {
+  document.getElementById("message").textContent = text;
+}
+
+// RESTART
+window.restart = function() {
+  defenders.forEach(d => scene.remove(d.model));
+  enemies.forEach(e => scene.remove(e.model));
+
+  defenders = [];
+  enemies = [];
+
+  hp = 100;
+  points = 100;
+  wave = 1;
+  running = false;
+  gameOver = false;
+  spawned = 0;
+  spawnTimer = 0;
+
+  message("Recruit creatures to protect Mametchi!");
+  updateUI();
+};
+
+// RESIZE
+window.addEventListener("resize", () => {
+  const width = container.clientWidth;
+  camera.aspect = width / 480;
+  camera.updateProjectionMatrix();
+  renderer.setSize(width, 480);
+});
+
+// MAIN LOOP
+function animate(time) {
+  requestAnimationFrame(animate);
+
+  const dt = lastTime
+    ? Math.min((time-lastTime)/1000, 0.05)
+    : 0;
+
+  lastTime = time;
+
+  update(dt);
+
+  // Gentle character movement.
+  defenders.forEach(d => {
+    if (d.biting <= 0) {
+      d.model.rotation.y = Math.sin(time * 0.002) * 0.08;
+    }
+  });
+
+  renderer.render(scene, camera);
+}
+
+updateUI();
+animate(0);
+
+</script>
+</body>
+</html>

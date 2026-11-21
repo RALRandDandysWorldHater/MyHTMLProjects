@@ -1,0 +1,451 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mametchi Infinite Defense</title>
+
+<style>
+body {
+    margin: 0;
+    background: #17202e;
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+h1 {
+    color: #ffe36e;
+}
+
+.stats {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin: 15px;
+}
+
+.stat {
+    background: #293b53;
+    padding: 12px 22px;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+button {
+    background: #ffcf48;
+    border: none;
+    padding: 12px 20px;
+    margin: 5px;
+    border-radius: 9px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover {
+    background: #fff08a;
+}
+
+#arena {
+    position: relative;
+    margin: 20px auto;
+    width: 95%;
+    max-width: 1000px;
+    height: 430px;
+    background: linear-gradient(#5a7951, #304c35);
+    border: 5px solid #d7c18a;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+#mametchi {
+    position: absolute;
+    left: 15px;
+    top: 165px;
+    font-size: 65px;
+    z-index: 5;
+}
+
+.creature, .enemy {
+    position: absolute;
+    font-size: 34px;
+    white-space: nowrap;
+}
+
+.creature {
+    z-index: 3;
+}
+
+.enemy {
+    z-index: 2;
+}
+
+#message {
+    color: #ffe36e;
+    min-height: 24px;
+}
+
+#health {
+    font-size: 20px;
+    color: #ff9c9c;
+}
+
+#creatureList {
+    max-height: 160px;
+    overflow-y: auto;
+    background: #293b53;
+    border-radius: 10px;
+    margin: 15px auto;
+    padding: 12px;
+    max-width: 900px;
+}
+
+.small {
+    color: #b9c9dd;
+    font-size: 12px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🐣 Mametchi Infinite Defense</h1>
+
+<div class="stats">
+    <div class="stat">
+        Player Points: <span id="points">∞</span>
+    </div>
+
+    <div class="stat">
+        Hostile Creatures: <span id="count">∞</span>
+    </div>
+
+    <div class="stat">
+        Enemies Defeated: <span id="defeated">0</span>
+    </div>
+</div>
+
+<div id="health">Mametchi Health: 100</div>
+
+<div id="arena">
+    <div id="mametchi">🐣</div>
+</div>
+
+<div>
+    <button onclick="summonCreature()">
+        Summon Hostile Creature
+    </button>
+
+    <button onclick="summonWave()">
+        Summon Creature Army
+    </button>
+
+    <button onclick="restartGame()">
+        Restart Game
+    </button>
+</div>
+
+<p id="message">Protect Mametchi!</p>
+
+<h2>Hostile Creature Collection</h2>
+
+<div id="creatureList"></div>
+
+<p class="small">
+Unlimited points and creature recruitment.
+The game continuously generates new opponents.
+</p>
+
+<script>
+
+// HOSTILE CREATURE ROSTER
+
+const creatures = [
+
+    // BACKROOMS
+    {name:"Smiler", icon:"😁", faction:"Backrooms"},
+    {name:"Hound", icon:"🐕", faction:"Backrooms"},
+    {name:"Skin-Stealer", icon:"👤", faction:"Backrooms"},
+    {name:"Partygoer", icon:"🎭", faction:"Backrooms"},
+    {name:"Deathmoth", icon:"🦋", faction:"Backrooms"},
+    {name:"Clump", icon:"👾", faction:"Backrooms"},
+    {name:"Faceling", icon:"😶", faction:"Backrooms"},
+
+    // CASTLE XYZ
+    {name:"Dark Mouse", icon:"🐭", faction:"Castle XYZ"},
+    {name:"Shadow Rat", icon:"🐀", faction:"Castle XYZ"},
+    {name:"Castle Shadow", icon:"👤", faction:"Castle XYZ"},
+    {name:"Castle Monster", icon:"👹", faction:"Castle XYZ"},
+
+    // BFDI HOSTILE CREATURES
+    // Original creature concepts, NOT BFDI characters.
+    {name:"BFDI Beast", icon:"👾", faction:"BFDI"},
+    {name:"BFDI Crawler", icon:"🪲", faction:"BFDI"},
+    {name:"BFDI Monster", icon:"👹", faction:"BFDI"},
+
+    // HALF-LIFE
+    {name:"Headcrab", icon:"🦀", faction:"Half-Life"},
+    {name:"Zombie", icon:"🧟", faction:"Half-Life"},
+    {name:"Houndeye", icon:"🐺", faction:"Half-Life"},
+    {name:"Barnacle", icon:"👅", faction:"Half-Life"},
+
+    // HALF-LIFE 2
+    {name:"Fast Headcrab", icon:"🦀", faction:"Half-Life 2"},
+    {name:"Poison Headcrab", icon:"🕷️", faction:"Half-Life 2"},
+    {name:"Antlion", icon:"🐜", faction:"Half-Life 2"},
+    {name:"Fast Zombie", icon:"🧟", faction:"Half-Life 2"},
+
+    // GMOD
+    {name:"GMod Nextbot", icon:"👹", faction:"GMod"},
+    {name:"GMod Monster", icon:"👾", faction:"GMod"},
+    {name:"GMod Crawler", icon:"🕷️", faction:"GMod"}
+];
+
+const enemies = [
+    {name:"Drum", icon:"🥁"},
+    {name:"Taiko", icon:"🪘"},
+    {name:"Timpani", icon:"🛢️"},
+    {name:"Violin", icon:"🎻"},
+    {name:"King", icon:"👑"},
+    {name:"Female King", icon:"👸"}
+];
+
+let defenders = [];
+let attackers = [];
+
+let health = 100;
+let defeated = 0;
+let gameRunning = true;
+
+const arena = document.getElementById("arena");
+
+function randomItem(array) {
+    return array[Math.floor(Math.random() * array.length)];
+}
+
+// DISPLAY THE COLLECTION
+
+function updateCollection() {
+    document.getElementById("creatureList").innerHTML =
+        creatures.map(c =>
+        `<span style="display:inline-block;margin:6px">
+        ${c.icon} ${c.name}
+        <small>(${c.faction})</small>
+        </span>`
+        ).join("");
+}
+
+updateCollection();
+
+// SUMMON DEFENDERS
+
+function summonCreature() {
+
+    if (!gameRunning) return;
+
+    const data = randomItem(creatures);
+
+    const element = document.createElement("div");
+
+    element.className = "creature";
+    element.textContent = data.icon;
+
+    element.title = data.name + " - " + data.faction;
+
+    element.style.left = "100px";
+    element.style.top = (40 + Math.random() * 320) + "px";
+
+    arena.appendChild(element);
+
+    defenders.push({
+        element: element,
+        x: 100,
+        y: parseFloat(element.style.top),
+        name: data.name,
+        attackCooldown: 0
+    });
+
+    document.getElementById("message").textContent =
+        data.name + " joined Mametchi's army!";
+}
+
+// SUMMON MANY CREATURES
+
+function summonWave() {
+    for (let i = 0; i < 15; i++) {
+        summonCreature();
+    }
+}
+
+// GENERATE ENEMIES
+
+function spawnEnemy() {
+
+    if (!gameRunning) return;
+
+    if (attackers.length >= 40) return;
+
+    const data = randomItem(enemies);
+
+    const element = document.createElement("div");
+
+    element.className = "enemy";
+    element.textContent = data.icon;
+    element.title = data.name;
+
+    element.style.left = "930px";
+    element.style.top = (30 + Math.random() * 340) + "px";
+
+    arena.appendChild(element);
+
+    attackers.push({
+        element: element,
+        x: 930,
+        y: parseFloat(element.style.top),
+        name: data.name,
+        hp: 3
+    });
+}
+
+// CREATURES PROTECT MAMETCHI
+
+function updateGame() {
+
+    if (!gameRunning) return;
+
+    defenders.forEach(d => {
+
+        if (d.attackCooldown > 0) {
+            d.attackCooldown--;
+        }
+
+        let target = null;
+        let closest = Infinity;
+
+        attackers.forEach(e => {
+
+            const distance = Math.abs(e.x - d.x);
+
+            if (distance < closest && distance < 280) {
+                closest = distance;
+                target = e;
+            }
+        });
+
+        if (target) {
+
+            if (d.attackCooldown === 0) {
+
+                // Cartoon bite / bump attack
+                target.hp--;
+                d.attackCooldown = 35;
+
+                d.element.style.transform = "scale(1.3)";
+
+                setTimeout(() => {
+                    d.element.style.transform = "scale(1)";
+                }, 120);
+
+                if (target.hp <= 0) {
+
+                    target.element.remove();
+
+                    attackers = attackers.filter(
+                        e => e !== target
+                    );
+
+                    defeated++;
+
+                    document.getElementById("defeated")
+                        .textContent = defeated;
+                }
+            }
+
+        } else {
+
+            if (d.x < 330) {
+                d.x += 0.15;
+                d.element.style.left = d.x + "px";
+            }
+        }
+    });
+
+    attackers.forEach(e => {
+
+        const defenderNearby = defenders.some(d =>
+            Math.abs(d.x - e.x) < 45 &&
+            Math.abs(d.y - e.y) < 55
+        );
+
+        if (!defenderNearby) {
+            e.x -= 0.45;
+        }
+
+        e.element.style.left = e.x + "px";
+
+        // Enemy reaches Mametchi
+        if (e.x < 65) {
+
+            health -= 5;
+
+            e.element.remove();
+
+            attackers = attackers.filter(
+                enemy => enemy !== e
+            );
+
+            document.getElementById("health").textContent =
+                "Mametchi Health: " + Math.max(0, health);
+
+            if (health <= 0) {
+                gameRunning = false;
+
+                document.getElementById("message").textContent =
+                    "Mametchi needs help! Press Restart Game.";
+            }
+        }
+    });
+}
+
+// UNLIMITED POINTS
+document.getElementById("points").textContent = "∞";
+document.getElementById("count").textContent = "∞";
+
+// AUTOMATIC SPAWNING
+
+setInterval(spawnEnemy, 1800);
+
+// GAME LOOP
+
+setInterval(updateGame, 30);
+
+// RESTART
+
+function restartGame() {
+
+    defenders.forEach(d => d.element.remove());
+    attackers.forEach(e => e.element.remove());
+
+    defenders = [];
+    attackers = [];
+
+    health = 100;
+    defeated = 0;
+    gameRunning = true;
+
+    document.getElementById("health").textContent =
+        "Mametchi Health: 100";
+
+    document.getElementById("defeated").textContent = "0";
+
+    document.getElementById("message").textContent =
+        "Protect Mametchi!";
+}
+
+</script>
+
+</body>
+</html>
+

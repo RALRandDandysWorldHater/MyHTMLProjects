@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Protect Mametchi: Hostile Creature Sandbox</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body {
+      background: #10121a;
+      color: #eef1f8;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      user-select: none;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #191d2b;
+      padding: 8px 16px;
+      border-bottom: 2px solid #2b3147;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .title-area { display: flex; align-items: center; gap: 10px; }
+    .title-area h1 { font-size: 16px; color: #ffd166; letter-spacing: 0.3px; }
+    .stats { display: flex; gap: 10px; font-weight: bold; font-size: 13px; flex-wrap: wrap; }
+    .stat-badge { background: #23283b; padding: 5px 10px; border-radius: 6px; border: 1px solid #363e59; }
+    .infinity { color: #ffd166; font-size: 15px; }
+    .top-controls { display: flex; gap: 6px; flex-wrap: wrap; }
+    button {
+      background: #3a86ff;
+      color: #fff;
+      border: none;
+      padding: 6px 11px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 12px;
+      cursor: pointer;
+      transition: 0.12s;
+    }
+    button:hover { filter: brightness(1.12); }
+    button.toggle-on { background: #06d6a0; color: #0e1a1d; }
+    button.toggle-off { background: #4a526e; color: #d8deed; }
+    button.warn { background: #f77f00; color: #fff; }
+    button.danger { background: #ef476f; color: #fff; }
+
+    .workspace {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Left GMod-Style Sandbox Spawnmenu */
+    .spawnmenu {
+      width: 370px;
+      min-width: 330px;
+      background: #171a26;
+      border-right: 2px solid #2b3147;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      gap: 8px;
+    }
+    .spawnmenu-title {
+      font-size: 13px;
+      font-weight: bold;
+      color: #06d6a0;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .mode-bar {
+      display: flex;
+      gap: 5px;
+      background: #212638;
+      padding: 5px;
+      border-radius: 7px;
+      border: 1px solid #323952;
+    }
+    .mode-btn {
+      flex: 1;
+      padding: 5px 6px;
+      font-size: 11px;
+      background: #2c334a;
+      color: #b8c1d9;
+      border-radius: 5px;
+    }
+    .mode-btn.active {
+      background: #ffd166;
+      color: #12141d;
+    }
+    .search-box {
+      width: 100%;
+      background: #212638;
+      border: 1px solid #363e59;
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      outline: none;
+    }
+    .search-box:focus { border-color: #3a86ff; }
+    .tabs {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .tab {
+      background: #23283b;
+      color: #b8c0d9;
+      padding: 4px 8px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: bold;
+      border: 1px solid #353d57;
+    }
+    .tab.active { background: #3a86ff; color: #fff; border-color: #3a86ff; }
+
+    .spawn-grid {
+      flex: 1;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 7px;
+      padding-right: 3px;
+      align-content: start;
+    }
+    .spawn-tile {
+      background: #22273a;
+      border: 2px solid #323954;
+      border-radius: 8px;
+      padding: 7px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: 0.1s;
+    }
+    .spawn-tile:hover { border-color: #6f82bd; background: #282e45; }
+    .spawn-tile.selected { border-color: #06d6a0; background: #1c3136; }
+    .tile-top { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+    .tile-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: #141722;
+      border: 1px solid #3b4463;
+      flex-shrink: 0;
+    }
+    .tile-name { font-size: 12px; font-weight: bold; color: #fff; line-height: 1.2; }
+    .tile-cat { font-size: 10px; color: #8fa0c7; }
+    .tile-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      color: #ffd166;
+      border-top: 1px solid #313852;
+      padding-top: 4px;
+    }
+
+    /* Right Battlefield + Enemy Sandbox Bar */
+    .battle-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #0d0f17;
+      overflow: hidden;
+    }
+    .enemy-sandbox-bar {
+      background: #191d2b;
+      border-bottom: 1px solid #2b3147;
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .enemy-sandbox-bar span {
+      font-size: 11px;
+      font-weight: bold;
+      color: #ff758f;
+      margin-right: 4px;
+    }
+    .enemy-btn {
+      background: #2b2133;
+      border: 1px solid #593652;
+      color: #ffd6e0;
+      padding: 4px 9px;
+      font-size: 11px;
+      border-radius: 5px;
+    }
+    .enemy-btn:hover { background: #4a2a47; }
+
+    .canvas-wrap {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #131620;
+      padding: 10px;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      max-height: 100%;
+      border: 2px solid #2e354f;
+      border-radius: 8px;
+      background: #87ceeb;
+      cursor: crosshair;
+      display: block;
+    }
+    .hint-overlay {
+      position: absolute;
+      bottom: 18px;
+      right: 22px;
+      background: rgba(16, 18, 26, 0.78);
+      color: #e2e8f8;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      pointer-events: none;
+      border: 1px solid #353e5c;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="title-area">
+    <h1>PROTECT MAMETCHI: HOSTILE CREATURE SANDBOX</h1>
+  </div>
+  <div class="stats">
+    <div class="stat-badge">Points: <span class="infinity">∞</span></div>
+    <div class="stat-badge">Creature Cap: <span class="infinity">∞</span></div>
+    <div class="stat-badge">Attack: <span style="color:#ff6b6b;">BITE ONLY</span></div>
+    <div class="stat-badge">Mametchi HP: <span id="hp-display" style="color:#06d6a0;">1000 / 1000</span></div>
+    <div class="stat-badge">Wave: <span id="wave-display">1</span></div>
+    <div class="stat-badge">Allies: <span id="ally-count">0</span> | Enemies: <span id="enemy-count">0</span></div>
+  </div>
+  <div class="top-controls">
+    <button id="wave-toggle-btn" class="toggle-on">Auto-Waves: ON</button>
+    <button id="pause-btn" class="toggle-off">Pause</button>
+    <button id="heal-btn">Heal Mametchi</button>
+    <button id="clear-enemies-btn" class="warn">Clear Enemies</button>
+    <button id="clear-allies-btn" class="danger">Clear Creatures</button>
+    <button id="restart-btn">Restart</button>
+  </div>
+</header>
+
+<div class="workspace">
+  <!-- Left Sandbox Spawnmenu -->
+  <aside class="spawnmenu">
+    <div class="spawnmenu-title">
+      <span>Hostile Creature Spawnmenu</span>
+      <span style="color:#ffd166; font-size:11px;">COST: 0 (∞)</span>
+    </div>
+
+    <div class="mode-bar">
+      <button class="mode-btn active" id="mode-spawn1" title="Clicking a button spawns 1 creature immediately">Button: Spawn 1</button>
+      <button class="mode-btn" id="mode-spawn5" title="Clicking a button spawns 5 creatures immediately">Button: Spawn 5</button>
+      <button class="mode-btn" id="mode-brush" title="Select a creature, then click or drag on the field">Field Brush</button>
+    </div>
+
+    <input type="text" id="search-input" class="search-box" placeholder="Search hostile creatures (e.g. Rat, Dragon, Hound)..." />
+    <div class="tabs" id="category-tabs"></div>
+    <div class="spawn-grid" id="spawn-grid"></div>
+  </aside>
+
+  <!-- Right Battlefield -->
+  <main class="battle-area">
+    <div class="enemy-sandbox-bar">
+      <span>SANDBOX ENEMY SPAWNER:</span>
+      <button class="enemy-btn" data-enemy="Drum">+ Drum</button>
+      <button class="enemy-btn" data-enemy="Taiko">+ Taiko</button>
+      <button class="enemy-btn" data-enemy="Timpani">+ Timpani</button>
+      <button class="enemy-btn" data-enemy="Violin">+ Violin</button>
+      <button class="enemy-btn" data-enemy="King">+ King</button>
+      <button class="enemy-btn" data-enemy="Female King">+ Female King</button>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="gameCanvas" width="960" height="500"></canvas>
+      <div class="hint-overlay" id="hint-text">Selected: <b>Castle XYZ Rat</b> • Click any tile on the left to summon or click/drag on the field!</div>
+    </div>
+  </main>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// Complete Hostile Creature Roster (Excludes Evil Leafy, Four, and non-hostile BFDI contestants)
+const CREATURES = [
+  // Castle XYZ Rats / Mice (Black, red-eyed, mouse-like creatures with long wavy tail & round ears)
+  { id: 'cxyz_rat', name: 'Castle XYZ Rat', cat: 'Castle XYZ', hp: 145, dmg: 23, speed: 2.35, range: 34, cooldown: 26, color: '#080808', size: 22, style: 'cxyz' },
+  { id: 'cxyz_mouse', name: 'Castle XYZ Mouse', cat: 'Castle XYZ', hp: 115, dmg: 19, speed: 2.85, range: 31, cooldown: 22, color: '#111111', size: 18, style: 'cxyz' },
+  { id: 'cxyz_giant_rat', name: 'Giant Castle XYZ Rat', cat: 'Castle XYZ', hp: 270, dmg: 40, speed: 1.9, range: 38, cooldown: 32, color: '#000000', size: 28, style: 'cxyz' },
+
+  // BFDI Hostile Creatures (Strict actual monsters/creatures only)
+  { id: 'bfdi_bug', name: 'BFDI Poison Bug', cat: 'BFDI', hp: 95, dmg: 18, speed: 2.8, range: 30, cooldown: 22, color: '#6a4c93', size: 17, style: 'bug' },
+  { id: 'bfdi_queen_bug', name: 'BFDI Queen Bug', cat: 'BFDI', hp: 330, dmg: 44, speed: 1.6, range: 42, cooldown: 35, color: '#4a154b', size: 30, style: 'bug' },
+  { id: 'bfdi_ice_bug', name: 'BFDI Ice Bug', cat: 'BFDI', hp: 115, dmg: 21, speed: 2.6, range: 30, cooldown: 24, color: '#4cc9f0', size: 18, style: 'bug' },
+  { id: 'bfdi_fish_monster', name: 'BFDI Fish Monster', cat: 'BFDI', hp: 290, dmg: 46, speed: 1.8, range: 44, cooldown: 34, color: '#2b9348', size: 29, style: 'fish' },
+  { id: 'bfdi_chompy', name: 'Chompy', cat: 'BFDI', hp: 185, dmg: 35, speed: 2.2, range: 36, cooldown: 26, color: '#e63946', size: 22, style: 'beast' },
+  { id: 'bfdi_fire_monster', name: 'BFDI Fire Monster', cat: 'BFDI', hp: 245, dmg: 41, speed: 2.0, range: 40, cooldown: 30, color: '#f77f00', size: 27, style: 'beast' },
+  { id: 'bfdi_dragon', name: 'BFDI Dragon', cat: 'BFDI', hp: 430, dmg: 60, speed: 1.7, range: 48, cooldown: 38, color: '#d62828', size: 34, style: 'dragon' },
+  { id: 'bfdi_davidworm', name: 'Davidworm', cat: 'BFDI', hp: 215, dmg: 31, speed: 2.1, range: 38, cooldown: 28, color: '#f4a261', size: 24, style: 'worm' },
+  { id: 'bfdi_planty', name: 'Planty', cat: 'BFDI', hp: 195, dmg: 33, speed: 1.5, range: 38, cooldown: 28, color: '#38b000', size: 23, style: 'plant' },
+  { id: 'bfdi_fourse', name: 'Fourse', cat: 'BFDI', hp: 235, dmg: 36, speed: 2.7, range: 38, cooldown: 26, color: '#277da1', size: 25, style: 'beast' },
+  { id: 'bfdi_jingjing', name: 'JingJing', cat: 'BFDI', hp: 175, dmg: 29, speed: 2.4, range: 35, cooldown: 25, color: '#9b5de5', size: 21, style: 'beast' },
+  { id: 'bfdia_5b_enemy', name: 'BFDIA 5b Spike Walker', cat: 'BFDI', hp: 155, dmg: 27, speed: 2.3, range: 33, cooldown: 24, color: '#3d405b', size: 20, style: 'bug' },
+
+  // Backrooms Hostile Entities
+  { id: 'br_hound', name: 'Backrooms Hound', cat: 'Backrooms', hp: 165, dmg: 29, speed: 3.0, range: 35, cooldown: 22, color: '#4a3b32', size: 22, style: 'beast' },
+  { id: 'br_smiler', name: 'Smiler', cat: 'Backrooms', hp: 195, dmg: 36, speed: 2.7, range: 36, cooldown: 25, color: '#111111', size: 24, style: 'smiler' },
+  { id: 'br_skin_stealer', name: 'Skin-Stealer', cat: 'Backrooms', hp: 265, dmg: 39, speed: 2.0, range: 38, cooldown: 30, color: '#c99e87', size: 26, style: 'humanoid' },
+  { id: 'br_bacteria', name: 'Bacteria Entity', cat: 'Backrooms', hp: 245, dmg: 41, speed: 2.8, range: 40, cooldown: 26, color: '#1b1b1b', size: 28, style: 'wire' },
+  { id: 'br_partygoer', name: 'Partygoer', cat: 'Backrooms', hp: 205, dmg: 33, speed: 2.2, range: 36, cooldown: 28, color: '#e9c46a', size: 24, style: 'humanoid' },
+  { id: 'br_deathmoth', name: 'Male Deathmoth', cat: 'Backrooms', hp: 135, dmg: 25, speed: 3.2, range: 32, cooldown: 20, color: '#7f5539', size: 20, style: 'bug' },
+  { id: 'br_wretch', name: 'Wretch', cat: 'Backrooms', hp: 180, dmg: 31, speed: 2.5, range: 35, cooldown: 24, color: '#8d5b4c', size: 22, style: 'humanoid' },
+  { id: 'br_clump', name: 'The Clump', cat: 'Backrooms', hp: 315, dmg: 45, speed: 1.6, range: 42, cooldown: 34, color: '#5c4742', size: 30, style: 'beast' },
+
+  // Half-Life Hostile Creatures
+  { id: 'hl_headcrab', name: 'Headcrab', cat: 'Half-Life', hp: 100, dmg: 21, speed: 3.1, range: 30, cooldown: 20, color: '#d4a373', size: 17, style: 'crab' },
+  { id: 'hl_bullsquid', name: 'Bullsquid', cat: 'Half-Life', hp: 255, dmg: 39, speed: 2.1, range: 40, cooldown: 30, color: '#8ab17d', size: 26, style: 'beast' },
+  { id: 'hl_houndeye', name: 'Houndeye', cat: 'Half-Life', hp: 155, dmg: 27, speed: 2.6, range: 34, cooldown: 24, color: '#e9d8a6', size: 21, style: 'beast' },
+  { id: 'hl_barnacle', name: 'Barnacle Maw', cat: 'Half-Life', hp: 225, dmg: 43, speed: 1.1, range: 38, cooldown: 32, color: '#9e2a2b', size: 24, style: 'plant' },
+  { id: 'hl_ichthyosaur', name: 'Ichthyosaur', cat: 'Half-Life', hp: 345, dmg: 53, speed: 2.3, range: 46, cooldown: 34, color: '#3d5a80', size: 32, style: 'fish' },
+  { id: 'hl_gargantua', name: 'Gargantua', cat: 'Half-Life', hp: 510, dmg: 66, speed: 1.4, range: 50, cooldown: 42, color: '#293241', size: 36, style: 'humanoid' },
+  { id: 'hl_snark', name: 'Snark', cat: 'Half-Life', hp: 70, dmg: 17, speed: 3.6, range: 26, cooldown: 16, color: '#e63946', size: 14, style: 'bug' },
+
+  // Half-Life 2 Hostile Creatures
+  { id: 'hl2_fast_zombie', name: 'Fast Zombie', cat: 'Half-Life 2', hp: 170, dmg: 31, speed: 3.4, range: 35, cooldown: 19, color: '#bc6c25', size: 22, style: 'humanoid' },
+  { id: 'hl2_poison_zombie', name: 'Poison Zombie', cat: 'Half-Life 2', hp: 335, dmg: 45, speed: 1.4, range: 40, cooldown: 36, color: '#3a5a40', size: 29, style: 'humanoid' },
+  { id: 'hl2_antlion', name: 'Antlion', cat: 'Half-Life 2', hp: 190, dmg: 33, speed: 2.9, range: 36, cooldown: 23, color: '#a3b18a', size: 23, style: 'bug' },
+  { id: 'hl2_antlion_guard', name: 'Antlion Guard', cat: 'Half-Life 2', hp: 490, dmg: 64, speed: 1.8, range: 48, cooldown: 38, color: '#588157', size: 35, style: 'beast' },
+  { id: 'hl2_fast_headcrab', name: 'Fast Headcrab', cat: 'Half-Life 2', hp: 90, dmg: 20, speed: 3.5, range: 28, cooldown: 18, color: '#dda15e', size: 16, style: 'crab' },
+  { id: 'hl2_poison_headcrab', name: 'Poison Headcrab', cat: 'Half-Life 2', hp: 115, dmg: 29, speed: 2.4, range: 30, cooldown: 25, color: '#2b2d42', size: 17, style: 'crab' },
+  { id: 'hl2_hunter', name: 'Combine Hunter', cat: 'Half-Life 2', hp: 315, dmg: 47, speed: 2.5, range: 42, cooldown: 28, color: '#4a5759', size: 29, style: 'beast' },
+
+  // GMod Hostile Entities
+  { id: 'gmod_nextbot', name: 'GMod Nextbot Chaser', cat: 'GMod', hp: 225, dmg: 39, speed: 3.6, range: 38, cooldown: 20, color: '#ff006e', size: 24, style: 'smiler' },
+  { id: 'gmod_sanic', name: 'Sanic Nextbot', cat: 'GMod', hp: 185, dmg: 35, speed: 4.1, range: 36, cooldown: 18, color: '#3a86ff', size: 23, style: 'beast' },
+  { id: 'gmod_error', name: 'Hostile ERROR Entity', cat: 'GMod', hp: 275, dmg: 46, speed: 2.3, range: 40, cooldown: 26, color: '#d90429', size: 26, style: 'error' },
+  { id: 'gmod_mingebag', name: 'Hostile Mingebag', cat: 'GMod', hp: 180, dmg: 30, speed: 2.6, range: 35, cooldown: 24, color: '#43aa8b', size: 22, style: 'humanoid' }
+];
+
+// Attacking Enemies (Drums, Taikos, Timpanis, Violins, Kings, Female Kings)
+const ENEMY_TYPES = [
+  { type: 'Drum', hp: 115, dmg: 12, speed: 1.25, color: '#e63946', size: 22 },
+  { type: 'Taiko', hp: 185, dmg: 18, speed: 1.0, color: '#b5179e', size: 26 },
+  { type: 'Timpani', hp: 245, dmg: 22, speed: 0.85, color: '#ca6702', size: 28 },
+  { type: 'Violin', hp: 100, dmg: 15, speed: 1.65, color: '#9b5de5', size: 20 },
+  { type: 'King', hp: 330, dmg: 28, speed: 0.95, color: '#ffd166', size: 27 },
+  { type: 'Female King', hp: 320, dmg: 28, speed: 1.05, color: '#ff70a6', size: 27 }
+];
+
+let selectedCreature = CREATURES[0];
+let activeCategory = 'All';
+let searchQuery = '';
+let spawnMode = 'spawn1'; // 'spawn1' | 'spawn5' | 'brush'
+let autoWaves = true;
+let paused = false;
+let gameOver = false;
+
+let allies = [];
+let enemies = [];
+let biteEffects = [];
+let mametchi = { x: 80, y: 335, hp: 1000, maxHp: 1000 };
+let wave = 1;
+let spawnTimer = 0;
+let enemiesToSpawn = 8;
+let laneCycle = 0;
+let isDraggingCanvas = false;
+let lastBrushTime = 0;
+
+// UI References
+const tabsEl = document.getElementById('category-tabs');
+const gridEl = document.getElementById('spawn-grid');
+const searchInput = document.getElementById('search-input');
+const hintText = document.getElementById('hint-text');
+
+const categories = ['All', 'Castle XYZ', 'BFDI', 'Backrooms', 'Half-Life', 'Half-Life 2', 'GMod'];
+
+function drawMiniIcon(canvasEl, c) {
+  const ictx = canvasEl.getContext('2d');
+  ictx.clearRect(0, 0, 28, 28);
+  ictx.save();
+  ictx.translate(14, 15);
+  if (c.style === 'cxyz') {
+    ictx.fillStyle = '#050505';
+    ictx.beginPath();
+    ictx.arc(-3, -6, 3.5, 0, Math.PI * 2);
+    ictx.arc(3, -6, 3.5, 0, Math.PI * 2);
+    ictx.ellipse(0, 1, 9, 6, 0, Math.PI, 0);
+    ictx.lineTo(11, 4);
+    ictx.lineTo(-9, 4);
+    ictx.fill();
+    ictx.fillStyle = '#ff1e1e';
+    ictx.beginPath();
+    ictx.arc(3, -1, 2, 0, Math.PI * 2);
+    ictx.arc(6, 0, 1.8, 0, Math.PI * 2);
+    ictx.fill();
+  } else {
+    ictx.fillStyle = c.color;
+    ictx.beginPath();
+    ictx.arc(0, 0, 9, 0, Math.PI * 2);
+    ictx.fill();
+    ictx.fillStyle = '#ffbe0b';
+    ictx.beginPath();
+    ictx.arc(3, -2, 2, 0, Math.PI * 2);
+    ictx.fill();
+  }
+  ictx.restore();
+}
+
+function renderSpawnmenu() {
+  tabsEl.innerHTML = '';
+  categories.forEach(cat => {
+    const btn = document.createElement('div');
+    btn.className = 'tab' + (activeCategory === cat ? ' active' : '');
+    btn.textContent = cat;
+    btn.onclick = () => { activeCategory = cat; renderSpawnmenu(); };
+    tabsEl.appendChild(btn);
+  });
+
+  gridEl.innerHTML = '';
+  const filtered = CREATURES.filter(c => {
+    const matchCat = activeCategory === 'All' || c.cat === activeCategory;
+    const matchSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        c.cat.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchCat && matchSearch;
+  });
+
+  filtered.forEach(c => {
+    const tile = document.createElement('div');
+    tile.className = 'spawn-tile' + (selectedCreature.id === c.id ? ' selected' : '');
+
+    const top = document.createElement('div');
+    top.className = 'tile-top';
+
+    const icon = document.createElement('canvas');
+    icon.width = 28;
+    icon.height = 28;
+    icon.className = 'tile-icon';
+    drawMiniIcon(icon, c);
+
+    const textWrap = document.createElement('div');
+    textWrap.innerHTML = `
+      <div class="tile-name">${c.name}</div>
+      <div class="tile-cat">${c.cat}</div>
+    `;
+
+    top.appendChild(icon);
+    top.appendChild(textWrap);
+
+    const footer = document.createElement('div');
+    footer.className = 'tile-footer';
+    footer.innerHTML = `<span>Bite: ${c.dmg}</span><span>HP: ${c.hp}</span>`;
+
+    tile.appendChild(top);
+    tile.appendChild(footer);
+
+    tile.onclick = () => {
+      selectedCreature = c;
+      updateHint();
+      if (!gameOver) {
+        if (spawnMode === 'spawn1') summonInLanes(c, 1);
+        else if (spawnMode === 'spawn5') summonInLanes(c, 5);
+      }
+      renderSpawnmenu();
+    };
+
+    gridEl.appendChild(tile);
+  });
+}
+
+function updateHint() {
+  const modeLabel = spawnMode === 'spawn1'
+    ? 'Clicking tile spawns 1'
+    : spawnMode === 'spawn5'
+    ? 'Clicking tile spawns 5'
+    : 'Field Brush active (click/drag on field)';
+  hintText.innerHTML = `Selected: <b>${selectedCreature.name}</b> • ${modeLabel} • Click anywhere on field to place`;
+}
+
+// Mode Buttons
+document.getElementById('mode-spawn1').onclick = (e) => {
+  spawnMode = 'spawn1';
+  setActiveModeBtn(e.target);
+  updateHint();
+};
+document.getElementById('mode-spawn5').onclick = (e) => {
+  spawnMode = 'spawn5';
+  setActiveModeBtn(e.target);
+  updateHint();
+};
+document.getElementById('mode-brush').onclick = (e) => {
+  spawnMode = 'brush';
+  setActiveModeBtn(e.target);
+  updateHint();
+};
+
+function setActiveModeBtn(activeEl) {
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  activeEl.classList.add('active');
+}
+
+searchInput.addEventListener('input', (e) => {
+  searchQuery = e.target.value;
+  renderSpawnmenu();
+});
+
+// Top Controls
+const waveToggleBtn = document.getElementById('wave-toggle-btn');
+waveToggleBtn.onclick = () => {
+  autoWaves = !autoWaves;
+  waveToggleBtn.textContent = autoWaves ? 'Auto-Waves: ON' : 'Auto-Waves: OFF';
+  waveToggleBtn.className = autoWaves ? 'toggle-on' : 'toggle-off';
+};
+
+const pauseBtn = document.getElementById('pause-btn');
+pauseBtn.onclick = () => {
+  paused = !paused;
+  pauseBtn.textContent = paused ? 'Resume' : 'Pause';
+  pauseBtn.className = paused ? 'warn' : 'toggle-off';
+};
+
+document.getElementById('heal-btn').onclick = () => {
+  mametchi.hp = mametchi.maxHp;
+  gameOver = false;
+  updateHud();
+};
+
+document.getElementById('clear-enemies-btn').onclick = () => {
+  enemies = [];
+  updateHud();
+};
+
+document.getElementById('clear-allies-btn').onclick = () => {
+  allies = [];
+  updateHud();
+};
+
+document.getElementById('restart-btn').onclick = () => {
+  allies = [];
+  enemies = [];
+  biteEffects = [];
+  mametchi.hp = mametchi.maxHp;
+  wave = 1;
+  enemiesToSpawn = 8;
+  gameOver = false;
+  paused = false;
+  pauseBtn.textContent = 'Pause';
+  pauseBtn.className = 'toggle-off';
+  updateHud();
+};
+
+// Enemy Sandbox Spawner Buttons
+document.querySelectorAll('.enemy-btn').forEach(btn => {
+  btn.onclick = () => {
+    if (gameOver) return;
+    const typeName = btn.getAttribute('data-enemy');
+    const template = ENEMY_TYPES.find(e => e.type === typeName);
+    if (template) spawnSpecificEnemy(template);
+  };
+});
+
+function summonInLanes(creatureTemplate, count) {
+  const lanes = [215, 275, 335, 395, 455];
+  for (let i = 0; i < count; i++) {
+    const y = lanes[laneCycle % lanes.length];
+    laneCycle++;
+    const x = 165 + (i % 5) * 20;
+    spawnAlly(creatureTemplate, x, y);
+  }
+}
+
+function spawnAlly(creatureTemplate, x, y) {
+  const clampedY = Math.max(195, Math.min(475, y));
+  const clampedX = Math.max(130, Math.min(canvas.width - 35, x));
+  allies.push({
+    ...creatureTemplate,
+    x: clampedX,
+    y: clampedY,
+    currentHp: creatureTemplate.hp,
+    cdTimer: 0,
+    biteAnim: 0
+  });
+  updateHud();
+}
+
+function spawnSpecificEnemy(template) {
+  const scale = 1 + (wave - 1) * 0.12;
+  const lanes = [215, 275, 335, 395, 455];
+  const y = lanes[Math.floor(Math.random() * lanes.length)];
+  enemies.push({
+    ...template,
+    x: canvas.width + 25,
+    y: y,
+    hp: Math.round(template.hp * scale),
+    maxHp: Math.round(template.hp * scale),
+    dmg: Math.round(template.dmg * scale),
+    cdTimer: 0
+  });
+  updateHud();
+}
+
+function spawnWaveEnemy() {
+  const template = ENEMY_TYPES[Math.floor(Math.random() * ENEMY_TYPES.length)];
+  spawnSpecificEnemy(template);
+}
+
+// Canvas Click & Drag Placement
+function placeAtMouseEvent(e) {
+  if (gameOver) return;
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const cx = (e.clientX - rect.left) * scaleX;
+  const cy = (e.clientY - rect.top) * scaleY;
+  spawnAlly(selectedCreature, cx, cy);
+}
+
+canvas.addEventListener('mousedown', (e) => {
+  isDraggingCanvas = true;
+  placeAtMouseEvent(e);
+  lastBrushTime = performance.now();
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  if (!isDraggingCanvas) return;
+  const now = performance.now();
+  if (now - lastBrushTime > 65) {
+    placeAtMouseEvent(e);
+    lastBrushTime = now;
+  }
+});
+
+window.addEventListener('mouseup', () => { isDraggingCanvas = false; });
+
+function updateHud() {
+  document.getElementById('hp-display').textContent = `${mametchi.hp} / ${mametchi.maxHp}`;
+  document.getElementById('wave-display').textContent = wave;
+  document.getElementById('ally-count').textContent = allies.length;
+  document.getElementById('enemy-count').textContent = enemies.length;
+}
+
+// Rendering
+function drawBackground() {
+  ctx.fillStyle = '#87ceeb';
+  ctx.fillRect(0, 0, canvas.width, 175);
+
+  // Castle XYZ Towers
+  ctx.fillStyle = '#6c757d';
+  ctx.fillRect(28, 90, 95, 85);
+  ctx.fillRect(23, 74, 22, 16);
+  ctx.fillRect(65, 74, 22, 16);
+  ctx.fillRect(106, 74, 22, 16);
+
+  // Ground Line & Stone Floor
+  ctx.fillStyle = '#111111';
+  ctx.fillRect(0, 170, canvas.width, 8);
+  ctx.fillStyle = '#7d8590';
+  ctx.fillRect(0, 178, canvas.width, canvas.height - 178);
+
+  // Lane Guides
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.13)';
+  ctx.lineWidth = 2;
+  for (let y = 215; y <= 455; y += 60) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(canvas.width, y);
+    ctx.stroke();
+  }
+}
+
+function drawMametchi() {
+  const { x, y } = mametchi;
+  ctx.save();
+  ctx.translate(x, y);
+
+  ctx.fillStyle = '#fff3b0';
+  ctx.beginPath();
+  ctx.ellipse(0, 18, 22, 26, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#222';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.ellipse(0, -14, 26, 22, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = '#1d3557';
+  ctx.beginPath();
+  ctx.arc(-18, -34, 11, 0, Math.PI * 2);
+  ctx.arc(18, -34, 11, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = '#111';
+  ctx.beginPath();
+  ctx.arc(-9, -15, 4, 0, Math.PI * 2);
+  ctx.arc(9, -15, 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#ff758f';
+  ctx.beginPath();
+  ctx.arc(-15, -9, 3.5, 0, Math.PI * 2);
+  ctx.arc(15, -9, 3.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 12px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('MAMETCHI', 0, 58);
+  ctx.restore();
+}
+
+function drawCreature(c) {
+  ctx.save();
+  ctx.translate(c.x, c.y);
+  const lunge = c.biteAnim > 0 ? 8 : 0;
+  ctx.translate(lunge, 0);
+
+  if (c.style === 'cxyz') {
+    // Castle XYZ Rat / Mouse: black body, long wavy tail, round ears, pointed snout, glowing red eyes
+    ctx.strokeStyle = '#050505';
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-c.size * 0.7, 2);
+    ctx.bezierCurveTo(-c.size * 1.4, -14, -c.size * 1.7, 6, -c.size * 2.0, -10);
+    ctx.stroke();
+
+    ctx.fillStyle = '#050505';
+    ctx.beginPath();
+    ctx.arc(-4, -c.size * 0.75, c.size * 0.34, 0, Math.PI * 2);
+    ctx.arc(6, -c.size * 0.78, c.size * 0.34, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.ellipse(0, 2, c.size * 0.95, c.size * 0.65, 0, Math.PI, 0);
+    ctx.lineTo(c.size * 1.35, 6);
+    ctx.quadraticCurveTo(c.size * 1.35, 11, c.size * 0.8, 11);
+    ctx.lineTo(-c.size * 0.95, 11);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = '#ff1e1e';
+    ctx.beginPath();
+    ctx.arc(c.size * 0.35, -3, 3.8, 0, Math.PI * 2);
+    ctx.arc(c.size * 0.65, -2, 3.4, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    ctx.fillStyle = c.color;
+    ctx.beginPath();
+    ctx.arc(0, 0, c.size * 0.75, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#111';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = c.style === 'smiler' ? '#ffffff' : '#ffbe0b';
+    ctx.beginPath();
+    ctx.arc(c.size * 0.25, -4, 3, 0, Math.PI * 2);
+    ctx.arc(c.size * 0.45, -4, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Biting Jaws
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.moveTo(c.size * 0.45, 2);
+    ctx.lineTo(c.size * 0.85, -2);
+    ctx.lineTo(c.size * 0.65, 5);
+    ctx.lineTo(c.size * 0.85, 9);
+    ctx.lineTo(c.size * 0.45, 7);
+    ctx.fill();
+  }
+
+  ctx.fillStyle = 'rgba(0,0,0,0.75)';
+  ctx.font = '10px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(c.name, 0, -c.size - 6);
+  ctx.restore();
+}
+
+function drawEnemy(e) {
+  ctx.save();
+  ctx.translate(e.x, e.y);
+
+  ctx.fillStyle = e.color;
+  ctx.beginPath();
+  ctx.roundRect(-e.size * 0.7, -e.size * 0.7, e.size * 1.4, e.size * 1.4, 6);
+  ctx.fill();
+  ctx.strokeStyle = '#111';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  if (e.type === 'King' || e.type === 'Female King') {
+    ctx.fillStyle = e.type === 'King' ? '#ffd700' : '#ff9ebb';
+    ctx.beginPath();
+    ctx.moveTo(-12, -e.size * 0.7);
+    ctx.lineTo(-14, -e.size * 0.7 - 12);
+    ctx.lineTo(-5, -e.size * 0.7 - 5);
+    ctx.lineTo(0, -e.size * 0.7 - 14);
+    ctx.lineTo(5, -e.size * 0.7 - 5);
+    ctx.lineTo(14, -e.size * 0.7 - 12);
+    ctx.lineTo(12, -e.size * 0.7);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 10px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(e.type, 0, 4);
+
+  const hpPct = Math.max(0, e.hp / e.maxHp);
+  ctx.fillStyle = '#222';
+  ctx.fillRect(-18, -e.size - 14, 36, 5);
+  ctx.fillStyle = '#06d6a0';
+  ctx.fillRect(-18, -e.size - 14, 36 * hpPct, 5);
+
+  ctx.restore();
+}
+
+function drawBiteEffects() {
+  biteEffects.forEach(b => {
+    ctx.save();
+    ctx.translate(b.x, b.y);
+    ctx.fillStyle = `rgba(255, 255, 255, ${b.life / 12})`;
+    ctx.font = 'bold 13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('CHOMP! -' + b.dmg, 0, -10 - (12 - b.life));
+    ctx.restore();
+  });
+}
+
+function update() {
+  if (gameOver || paused) return;
+
+  if (autoWaves) {
+    if (enemiesToSpawn > 0) {
+      spawnTimer--;
+      if (spawnTimer <= 0) {
+        spawnWaveEnemy();
+        enemiesToSpawn--;
+        spawnTimer = Math.max(35, 90 - wave * 5);
+      }
+    } else if (enemies.length === 0) {
+      wave++;
+      enemiesToSpawn = 8 + wave * 3;
+      updateHud();
+    }
+  }
+
+  // Hostile Creatures move toward enemies and BITE ONLY
+  for (let i = allies.length - 1; i >= 0; i--) {
+    const a = allies[i];
+    if (a.cdTimer > 0) a.cdTimer--;
+    if (a.biteAnim > 0) a.biteAnim--;
+
+    let target = null;
+    let bestDist = Infinity;
+    for (const e of enemies) {
+      const dist = Math.hypot(e.x - a.x, e.y - a.y);
+      if (dist < bestDist) {
+        bestDist = dist;
+        target = e;
+      }
+    }
+
+    if (target) {
+      if (bestDist <= a.range) {
+        if (a.cdTimer <= 0) {
+          target.hp -= a.dmg;
+          a.cdTimer = a.cooldown;
+          a.biteAnim = 8;
+          biteEffects.push({ x: target.x, y: target.y, dmg: a.dmg, life: 12 });
+        }
+      } else {
+        const angle = Math.atan2(target.y - a.y, target.x - a.x);
+        a.x += Math.cos(angle) * a.speed;
+        a.y += Math.sin(angle) * a.speed;
+      }
+    }
+
+    if (a.currentHp <= 0) {
+      allies.splice(i, 1);
+      updateHud();
+    }
+  }
+
+  // Attacking Enemies
+  for (let i = enemies.length - 1; i >= 0; i--) {
+    const e = enemies[i];
+    if (e.hp <= 0) {
+      enemies.splice(i, 1);
+      updateHud();
+      continue;
+    }
+    if (e.cdTimer > 0) e.cdTimer--;
+
+    let blockedBy = null;
+    for (const a of allies) {
+      if (Math.hypot(e.x - a.x, e.y - a.y) < 34) {
+        blockedBy = a;
+        break;
+      }
+    }
+
+    if (blockedBy) {
+      if (e.cdTimer <= 0) {
+        blockedBy.currentHp -= e.dmg;
+        e.cdTimer = 40;
+      }
+    } else if (e.x > mametchi.x + 38) {
+      e.x -= e.speed;
+    } else {
+      if (e.cdTimer <= 0) {
+        mametchi.hp = Math.max(0, mametchi.hp - e.dmg);
+        e.cdTimer = 45;
+        updateHud();
+        if (mametchi.hp <= 0) gameOver = true;
+      }
+    }
+  }
+
+  for (let i = biteEffects.length - 1; i >= 0; i--) {
+    biteEffects[i].life--;
+    if (biteEffects[i].life <= 0) biteEffects.splice(i, 1);
+  }
+}
+
+function loop() {
+  drawBackground();
+  drawMametchi();
+  allies.forEach(drawCreature);
+  enemies.forEach(drawEnemy);
+  drawBiteEffects();
+
+  if (paused && !gameOver) {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#ffd166';
+    ctx.font = 'bold 36px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('SANDBOX PAUSED', canvas.width / 2, canvas.height / 2);
+  }
+
+  if (gameOver) {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.72)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#ff4d6d';
+    ctx.font = 'bold 40px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('MAMETCHI WAS DEFEATED!', canvas.width / 2, canvas.height / 2 - 12);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '16px sans-serif';
+    ctx.fillText('Click "Heal Mametchi" or "Restart" above to keep playing', canvas.width / 2, canvas.height / 2 + 24);
+  }
+
+  update();
+  requestAnimationFrame(loop);
+}
+
+renderSpawnmenu();
+updateHint();
+updateHud();
+loop();
+</script>
+</body>
+</html>
